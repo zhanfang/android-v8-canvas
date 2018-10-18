@@ -57,15 +57,21 @@ Local<Context> InspectorClient::ensureDefaultContextInGroup(int group_id) {
 }
 
 void InspectorClient::SendInspectorMessage(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    LOGI("v8engine send");
     Isolate* isolate = args.GetIsolate();
     v8::HandleScope handle_scope(isolate);
     Local<Context> context = isolate->GetCurrentContext();
     args.GetReturnValue().Set(Undefined(isolate));
     Local<String> message = args[0]->ToString(context).ToLocalChecked();
+
+//    v8::String::Utf8Value utf8(isolate, message);
+//    LOGI("v8engine send %s", *utf8);
+
     v8_inspector::V8InspectorSession* session = InspectorClient::GetSession(context);
     int length = message->Length();
     std::unique_ptr<uint16_t[]> buffer(new uint16_t[length]);
     message->Write(buffer.get(), 0, length);
+
     v8_inspector::StringView message_view(buffer.get(), length);
     session->dispatchProtocolMessage(message_view);
     args.GetReturnValue().Set(True(isolate));

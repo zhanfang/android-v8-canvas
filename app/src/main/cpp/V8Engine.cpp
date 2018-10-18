@@ -111,7 +111,7 @@ Java_com_example_zhanfang_test_MainActivity_runScript(
             // Create a string containing the JavaScript source code.
             v8::Local<v8::String> source =
                     v8::String::NewFromUtf8(isolate,
-                                            "function receive(message){print(message);}; send({\"id\":0, \"method\": \"Runtime.enable\"})",
+                                            "function receive(message){print(message);}; send('{\"id\":0, \"method\": \"Debugger.enable\"}')",
                                             v8::NewStringType::kNormal)
                             .ToLocalChecked();
 //        v8::Local<v8::String> source =
@@ -128,8 +128,9 @@ Java_com_example_zhanfang_test_MainActivity_runScript(
 
             // Convert the result to an UTF8 string and print it.
             v8::String::Utf8Value utf8(isolate, result);
+            LOGI("v8engine %s", *utf8);
         }
-//        LOGI("v8engine %s", *utf8);
+//
     }
 
     // Dispose the isolate and tear down V8.
