@@ -9,7 +9,6 @@
 #include <v8_inspector/src/inspector/v8-regex.h>
 #include <v8_inspector/src/inspector/v8-inspector-session-impl.h>
 #include <v8_inspector/src/inspector/protocol/Debugger.h>
-#include "v8-page-resources.h"
 
 namespace v8_inspector {
 namespace utils {

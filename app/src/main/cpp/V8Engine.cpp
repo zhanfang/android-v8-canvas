@@ -9,7 +9,11 @@ using namespace v8;
 
 using namespace v8_inspector;
 
-//v8::Local<v8::Context> CreateShellContext(v8::Isolate *isolate);
+v8::Local<v8::Context> CreateShellContext(v8::Isolate *isolate);
+// Extracts a C string from a V8 Utf8Value.
+const char* ToCString(const v8::String::Utf8Value& value) {
+    return *value ? *value : "<string conversion failed>";
+}
 
 V8Engine::V8Engine() {
 //    v8::V8::InitializeICUDefaultLocation(nullptr);
@@ -81,7 +85,6 @@ Java_com_example_zhanfang_test_MainActivity_runScript(
     v8::Platform* platform = v8::platform::CreateDefaultPlatform();
     v8::V8::InitializePlatform(platform);
     v8::V8::Initialize();
-    LOGI("v8engine inited");
 
     // Create a new Isolate and make it the current one.
     v8::Isolate::CreateParams create_params;
@@ -95,31 +98,38 @@ Java_com_example_zhanfang_test_MainActivity_runScript(
         v8::HandleScope handle_scope(isolate);
 
         // Create a new context.
-        v8::Local<v8::Context> context = v8::Context::New(isolate);
+//        v8::Local<v8::Context> context = v8::Context::New(isolate);
+        v8::Local<v8::Context> context = CreateShellContext(isolate);
 
         // Enter the context for compiling and running the hello world script.
         v8::Context::Scope context_scope(context);
 
-//        {
-//            InspectorClient inspectorClient(context, true);
-//        }
+        {
+            InspectorClient inspectorClient(context, true);
 
-        // Create a string containing the JavaScript source code.
-        v8::Local<v8::String> source =
-                v8::String::NewFromUtf8(isolate, "const a = 1; const b = 2;a + b",
-                                        v8::NewStringType::kNormal)
-                        .ToLocalChecked();
 
-        // Compile the source code.
-        v8::Local<v8::Script> script =
-                v8::Script::Compile(context, source).ToLocalChecked();
+            // Create a string containing the JavaScript source code.
+            v8::Local<v8::String> source =
+                    v8::String::NewFromUtf8(isolate,
+                                            "function receive(message){print(message);}; send({\"id\":0, \"method\": \"Runtime.enable\"})",
+                                            v8::NewStringType::kNormal)
+                            .ToLocalChecked();
+//        v8::Local<v8::String> source =
+//                v8::String::NewFromUtf8(isolate, "print(123)",
+//                                        v8::NewStringType::kNormal)
+//                        .ToLocalChecked();
 
-        // Run the script to get the result.
-        v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
+            // Compile the source code.
+            v8::Local<v8::Script> script =
+                    v8::Script::Compile(context, source).ToLocalChecked();
 
-        // Convert the result to an UTF8 string and print it.
-        v8::String::Utf8Value utf8(isolate, result);
-        LOGI("v8engine %s", *utf8);
+            // Run the script to get the result.
+            v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
+
+            // Convert the result to an UTF8 string and print it.
+            v8::String::Utf8Value utf8(isolate, result);
+        }
+//        LOGI("v8engine %s", *utf8);
     }
 
     // Dispose the isolate and tear down V8.
@@ -128,22 +138,28 @@ Java_com_example_zhanfang_test_MainActivity_runScript(
     v8::V8::ShutdownPlatform();
     delete platform;
     delete create_params.array_buffer_allocator;
-    std::string hello = "Hello from C++";
+    std::string hello = "Hello from C";
     return env->NewStringUTF(hello.c_str());
 }
 
+void Print(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::String::Utf8Value str(args[0]);
+    const char* cstr = ToCString(str);
+    LOGI("v8engine print %s", cstr);
+}
 
-//v8::Local<v8::Context> CreateShellContext(v8::Isolate* isolate) {
-//
-//    v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
-//    // Bind the global 'print' function to the C++ Print callback.
-//    global->Set(
-//            v8::String::NewFromUtf8(isolate, "print", v8::NewStringType::kNormal)
-//                    .ToLocalChecked(),
-//            v8::FunctionTemplate::New(isolate, console::Print));
-//    return v8::Context::New(isolate, NULL, global);
-//}
-//
+v8::Local<v8::Context> CreateShellContext(v8::Isolate* isolate) {
+
+    v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
+    // Bind the global 'print' function to the C++ Print callback.
+    global->Set(
+            v8::String::NewFromUtf8(isolate, "print", v8::NewStringType::kNormal)
+                    .ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, Print));
+    return v8::Context::New(isolate, NULL, global);
+}
+
+
 //extern "C" JNIEXPORT jstring
 //JNICALL
 //Java_com_example_zhanfang_test_MainActivity_runScript(

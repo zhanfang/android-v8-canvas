@@ -19,6 +19,7 @@ private:
 
     static void SendInspectorMessage(
             const v8::FunctionCallbackInfo<v8::Value>& args);
+
     static const int kContextGroupId = 1;
 
     std::unique_ptr<v8_inspector::V8Inspector> inspector_;

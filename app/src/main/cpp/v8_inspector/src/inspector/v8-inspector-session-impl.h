@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8_INSPECTOR_V8_INSPECTOR_SESSION_IMPL_H_
-#define V8_INSPECTOR_V8_INSPECTOR_SESSION_IMPL_H_
+#ifndef V8_INSPECTOR_V8INSPECTORSESSIONIMPL_H_
+#define V8_INSPECTOR_V8INSPECTORSESSIONIMPL_H_
 
 #include <vector>
 
@@ -11,85 +11,39 @@
 #include "src/inspector/protocol/Forward.h"
 #include "src/inspector/protocol/Runtime.h"
 #include "src/inspector/protocol/Schema.h"
-#include "src/inspector/protocol/Page.h"
-#include "src/inspector/protocol/Network.h"
-#include "src/inspector/protocol/DOM.h"
-#include "src/inspector/protocol/CSS.h"
-#include "src/inspector/protocol/Overlay.h"
-#include "src/inspector/protocol/Log.h"
 
 #include "include/v8-inspector.h"
 
 namespace v8_inspector {
 
-class InjectedScript;
-class RemoteObjectIdBase;
-class V8ConsoleAgentImpl;
-class V8DebuggerAgentImpl;
-class V8InspectorImpl;
-class V8HeapProfilerAgentImpl;
-class V8ProfilerAgentImpl;
-class V8RuntimeAgentImpl;
-class V8SchemaAgentImpl;
-class V8PageAgentImpl;
-class V8NetworkAgentImpl;
-class V8DOMAgentImpl;
-class V8CSSAgentImpl;
-class V8OverlayAgentImpl;
-class V8LogAgentImpl;
+    class InjectedScript;
+    class RemoteObjectIdBase;
+    class V8ConsoleAgentImpl;
+    class V8DebuggerAgentImpl;
+    class V8InspectorImpl;
+    class V8HeapProfilerAgentImpl;
+    class V8ProfilerAgentImpl;
+    class V8RuntimeAgentImpl;
+    class V8SchemaAgentImpl;
 
-using protocol::Response;
+    using protocol::Response;
 
-class V8InspectorSessionImpl : public V8InspectorSession,
-    public protocol::FrontendChannel {
+    class V8InspectorSessionImpl : public V8InspectorSession,
+                                   public protocol::FrontendChannel {
     public:
         static std::unique_ptr<V8InspectorSessionImpl> create(
-            V8InspectorImpl*, int contextGroupId, int sessionId,
-            V8Inspector::Channel*, const StringView& state);
+                V8InspectorImpl*, int contextGroupId, int sessionId,
+                V8Inspector::Channel*, const StringView& state);
         ~V8InspectorSessionImpl();
 
-        V8InspectorImpl* inspector() const {
-            return m_inspector;
-        }
-        V8ConsoleAgentImpl* consoleAgent() {
-            return m_consoleAgent.get();
-        }
-        V8DebuggerAgentImpl* debuggerAgent() {
-            return m_debuggerAgent.get();
-        }
-        V8SchemaAgentImpl* schemaAgent() {
-            return m_schemaAgent.get();
-        }
-        V8ProfilerAgentImpl* profilerAgent() {
-            return m_profilerAgent.get();
-        }
-        V8RuntimeAgentImpl* runtimeAgent() {
-            return m_runtimeAgent.get();
-        }
-        V8PageAgentImpl* pageAgent() {
-            return m_pageAgent.get();
-        }
-        V8NetworkAgentImpl* networkAgent() {
-            return m_networkAgent.get();
-        }
-        V8DOMAgentImpl* domAgent() {
-            return m_domAgent.get();
-        }
-        V8CSSAgentImpl* cssAgent() {
-            return m_cssAgent.get();
-        }
-        V8OverlayAgentImpl* overlayAgent() {
-            return m_overlayAgent.get();
-        }
-        V8LogAgentImpl* logAgent() {
-            return m_logAgent.get();
-        }
-        int contextGroupId() const {
-            return m_contextGroupId;
-        }
-        int sessionId() const {
-            return m_sessionId;
-        }
+        V8InspectorImpl* inspector() const { return m_inspector; }
+        V8ConsoleAgentImpl* consoleAgent() { return m_consoleAgent.get(); }
+        V8DebuggerAgentImpl* debuggerAgent() { return m_debuggerAgent.get(); }
+        V8SchemaAgentImpl* schemaAgent() { return m_schemaAgent.get(); }
+        V8ProfilerAgentImpl* profilerAgent() { return m_profilerAgent.get(); }
+        V8RuntimeAgentImpl* runtimeAgent() { return m_runtimeAgent.get(); }
+        int contextGroupId() const { return m_contextGroupId; }
+        int sessionId() const { return m_sessionId; }
 
         Response findInjectedScript(int contextId, InjectedScript*&);
         Response findInjectedScript(RemoteObjectIdBase*, InjectedScript*&);
@@ -98,11 +52,11 @@ class V8InspectorSessionImpl : public V8InspectorSession,
         void reportAllContexts(V8RuntimeAgentImpl*);
         void setCustomObjectFormatterEnabled(bool);
         std::unique_ptr<protocol::Runtime::RemoteObject> wrapObject(
-            v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName,
-            bool generatePreview);
+                v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName,
+                bool generatePreview);
         std::unique_ptr<protocol::Runtime::RemoteObject> wrapTable(
-            v8::Local<v8::Context>, v8::Local<v8::Value> table,
-            v8::Local<v8::Value> columns);
+                v8::Local<v8::Context>, v8::Local<v8::Value> table,
+                v8::Local<v8::Value> columns);
         std::vector<std::unique_ptr<protocol::Schema::Domain>> supportedDomainsImpl();
         Response unwrapObject(const String16& objectId, v8::Local<v8::Value>*,
                               v8::Local<v8::Context>*, String16* objectGroup);
@@ -112,9 +66,9 @@ class V8InspectorSessionImpl : public V8InspectorSession,
         void dispatchProtocolMessage(const StringView& message) override;
         std::unique_ptr<StringBuffer> stateJSON() override;
         std::vector<std::unique_ptr<protocol::Schema::API::Domain>> supportedDomains()
-                override;
+        override;
         void addInspectedObject(
-            std::unique_ptr<V8InspectorSession::Inspectable>) override;
+                std::unique_ptr<V8InspectorSession::Inspectable>) override;
         void schedulePauseOnNextStatement(const StringView& breakReason,
                                           const StringView& breakDetails) override;
         void cancelPauseOnNextStatement() override;
@@ -124,15 +78,15 @@ class V8InspectorSessionImpl : public V8InspectorSession,
         void resume() override;
         void stepOver() override;
         std::vector<std::unique_ptr<protocol::Debugger::API::SearchMatch>>
-                searchInTextByLines(const StringView& text, const StringView& query,
-                                    bool caseSensitive, bool isRegex) override;
+        searchInTextByLines(const StringView& text, const StringView& query,
+                            bool caseSensitive, bool isRegex) override;
         void releaseObjectGroup(const StringView& objectGroup) override;
         bool unwrapObject(std::unique_ptr<StringBuffer>*, const StringView& objectId,
                           v8::Local<v8::Value>*, v8::Local<v8::Context>*,
                           std::unique_ptr<StringBuffer>* objectGroup) override;
         std::unique_ptr<protocol::Runtime::API::RemoteObject> wrapObject(
-            v8::Local<v8::Context>, v8::Local<v8::Value>, const StringView& groupName,
-            bool generatePreview) override;
+                v8::Local<v8::Context>, v8::Local<v8::Value>, const StringView& groupName,
+                bool generatePreview) override;
 
         V8InspectorSession::Inspectable* inspectedObject(unsigned num);
         static const unsigned kInspectedObjectBufferSize = 5;
@@ -144,9 +98,9 @@ class V8InspectorSessionImpl : public V8InspectorSession,
 
         // protocol::FrontendChannel implementation.
         void sendProtocolResponse(
-            int callId, std::unique_ptr<protocol::Serializable> message) override;
+                int callId, std::unique_ptr<protocol::Serializable> message) override;
         void sendProtocolNotification(
-            std::unique_ptr<protocol::Serializable> message) override;
+                std::unique_ptr<protocol::Serializable> message) override;
         void flushProtocolNotifications() override;
 
         int m_contextGroupId;
@@ -164,18 +118,12 @@ class V8InspectorSessionImpl : public V8InspectorSession,
         std::unique_ptr<V8ProfilerAgentImpl> m_profilerAgent;
         std::unique_ptr<V8ConsoleAgentImpl> m_consoleAgent;
         std::unique_ptr<V8SchemaAgentImpl> m_schemaAgent;
-        std::unique_ptr<V8PageAgentImpl> m_pageAgent;
-        std::unique_ptr<V8NetworkAgentImpl> m_networkAgent;
-        std::unique_ptr<V8DOMAgentImpl> m_domAgent;
-        std::unique_ptr<V8CSSAgentImpl> m_cssAgent;
-        std::unique_ptr<V8OverlayAgentImpl> m_overlayAgent;
-        std::unique_ptr<V8LogAgentImpl> m_logAgent;
         std::vector<std::unique_ptr<V8InspectorSession::Inspectable>>
                 m_inspectedObjects;
 
         DISALLOW_COPY_AND_ASSIGN(V8InspectorSessionImpl);
-};
+    };
 
 }  // namespace v8_inspector
 
-#endif  // V8_INSPECTOR_V8_INSPECTOR_SESSION_IMPL_H_
+#endif  // V8_INSPECTOR_V8INSPECTORSESSIONIMPL_H_
