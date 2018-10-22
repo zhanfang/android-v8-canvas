@@ -22,9 +22,6 @@ if ( NOT OPTIMIZED_BUILD OR OPTIMIZED_WITH_INSPECTOR_BUILD )
     set(
         INSPECTOR_SOURCES
 
-        src/main/cpp/InspectorClient.cpp
-        src/main/cpp/InspectorFrontend.cpp
-
         src/main/cpp/v8_inspector/src/inspector/protocol/Console.cpp
         src/main/cpp/v8_inspector/src/inspector/protocol/Debugger.cpp
         src/main/cpp/v8_inspector/src/inspector/protocol/HeapProfiler.cpp
@@ -77,6 +74,8 @@ add_library(
     # Runtime source
     src/main/cpp/V8Engine.cpp
     src/main/cpp/Util.cpp
+    src/main/cpp/ArgConverter.cpp
+    src/main/cpp/JEnv
 
     # V8 inspector source files will be included only in Release mode
     ${INSPECTOR_SOURCES}

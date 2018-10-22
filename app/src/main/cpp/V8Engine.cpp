@@ -1,172 +1,134 @@
 #include <jni.h>
 #include <os-android.h>
 #include <libplatform/libplatform.h>
-#include "V8Engine.h"
 #include <v8-inspector.h>
 #include <macros.h>
 
-using namespace v8;
+#include "V8Engine.h"
+#include "ArgConverter.h"
+//#include "InspectorClient.h"
 
-using namespace v8_inspector;
+using namespace tns;
+using namespace std;
 
-v8::Local<v8::Context> CreateShellContext(v8::Isolate *isolate);
-// Extracts a C string from a V8 Utf8Value.
-const char* ToCString(const v8::String::Utf8Value& value) {
-    return *value ? *value : "<string conversion failed>";
-}
+std::unique_ptr<v8::Platform> platform;
+v8::Isolate *mIsolate;
+v8::Persistent<v8::Context> mPersistentContext;
 
-V8Engine::V8Engine() {
-//    v8::V8::InitializeICUDefaultLocation(nullptr);
-//    v8::V8::InitializeExternalStartupData(nullptr);
-//    v8::Platform* platform_ = v8::platform::CreateDefaultPlatform();
-//    v8::V8::InitializePlatform(platform_);
-//    v8::V8::Initialize();
-//
-//    this->platform_ = platform_;
-//    LOGI("v8engine inited");
-//
-//    // Create a new Isolate and make it the current one.
-//    v8::Isolate::CreateParams create_params;
-//    create_params.array_buffer_allocator =
-//            v8::ArrayBuffer::Allocator::NewDefaultAllocator();
-//    v8::Isolate* isolate = v8::Isolate::New(create_params);
-//    this->isolate_ = isolate;
-}
-
-V8Engine::~V8Engine() {
-
-}
-
-void V8Engine::destory() {
-//    LOGI("V8Engine Cleaning up");
-//    this->isolate_->Dispose();
-//    v8::V8::Dispose();
-//    v8::V8::ShutdownPlatform();
-//
-//    delete this->platform_;
-//    if (g_array_buffer_allocator)
-//        delete g_array_buffer_allocator;
-//    this->isolate_ = nullptr;
-//    LOGI("v8engine end");
-}
-
-void V8Engine::hello() {
-//    v8::Isolate::Scope isolate_scope(isolate_);
-//    // Create a stack-allocated handle scope.
-//    v8::HandleScope handle_scope(isolate_);
-//    // Create a new context.
-////    v8::Local<v8::Context> context = v8::Context::New(isolate_);
-//    v8::Local<v8::Context> context = CreateShellContext(isolate_);
-//    // Enter the context for compiling and running the hello world script.
-//    v8::Context::Scope context_scope(context);
-//    // Create a string containing the JavaScript source code.
-//    v8::Local<v8::String> source =
-//            v8::String::NewFromUtf8(isolate_, "print('zhanfang'); const a = 1; const b = 2;a + b",
-//                                    v8::NewStringType::kNormal)
-//                    .ToLocalChecked();
-//    // Compile the source code.
-//    v8::Local<v8::Script> script =
-//            v8::Script::Compile(context, source).ToLocalChecked();
-//    // Run the script to get the result.
-//    v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
-//    // Convert the result to an UTF8 string and print it.
-//    v8::String::Utf8Value utf8(isolate_, result);
-//    LOGI("v8engine %s", *utf8);
-}
-
-extern "C" JNIEXPORT jstring
-JNICALL
-Java_com_example_zhanfang_test_MainActivity_runScript(
+extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
         JNIEnv *env,
         jobject /* this */) {
     // Initialize V8.
-    v8::V8::InitializeICUDefaultLocation(nullptr);
-    v8::V8::InitializeExternalStartupData(nullptr);
-    v8::Platform* platform = v8::platform::CreateDefaultPlatform();
-    v8::V8::InitializePlatform(platform);
+    v8::V8::InitializeICU();
+    platform = v8::platform::NewDefaultPlatform();
+    v8::V8::InitializePlatform(&(*platform.get()));
     v8::V8::Initialize();
 
     // Create a new Isolate and make it the current one.
     v8::Isolate::CreateParams create_params;
-    create_params.array_buffer_allocator =
-            v8::ArrayBuffer::Allocator::NewDefaultAllocator();
-    v8::Isolate* isolate = v8::Isolate::New(create_params);
-    {
-        v8::Isolate::Scope isolate_scope(isolate);
+    create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+    mIsolate = v8::Isolate::New(create_params);
 
-        // Create a stack-allocated handle scope.
-        v8::HandleScope handle_scope(isolate);
-
-        // Create a new context.
-//        v8::Local<v8::Context> context = v8::Context::New(isolate);
-        v8::Local<v8::Context> context = CreateShellContext(isolate);
-
-        // Enter the context for compiling and running the hello world script.
-        v8::Context::Scope context_scope(context);
-
-        {
-            InspectorClient inspectorClient(context, true);
+    v8::Isolate::Scope isolate_scope(mIsolate);
+    // Create a stack-allocated handle scope.
+    v8::HandleScope handle_scope(mIsolate);
 
 
-            // Create a string containing the JavaScript source code.
-            v8::Local<v8::String> source =
-                    v8::String::NewFromUtf8(isolate,
-                                            "function receive(message){print(message);}; send('{\"id\":0, \"method\": \"Debugger.enable\"}')",
-                                            v8::NewStringType::kNormal)
-                            .ToLocalChecked();
-//        v8::Local<v8::String> source =
-//                v8::String::NewFromUtf8(isolate, "print(123)",
-//                                        v8::NewStringType::kNormal)
-//                        .ToLocalChecked();
+    const auto readOnlyFlags = static_cast<v8::PropertyAttribute>(v8::PropertyAttribute::DontDelete | v8::PropertyAttribute::ReadOnly);
 
-            // Compile the source code.
-            v8::Local<v8::Script> script =
-                    v8::Script::Compile(context, source).ToLocalChecked();
+    auto globalFunctionTemplate = v8::FunctionTemplate::New(mIsolate);
+    globalFunctionTemplate->SetClassName(ArgConverter::ConvertToV8String(mIsolate, "WindowObject"));
+    auto globalTemplate = v8::ObjectTemplate::New(mIsolate, globalFunctionTemplate);
+    globalTemplate->Set(ArgConverter::ConvertToV8String(mIsolate, "testReadOnly"),
+                        ArgConverter::ConvertToV8String(mIsolate, "0"), readOnlyFlags);
 
-            // Run the script to get the result.
-            v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
+    v8::Local <v8::Context> context = v8::Context::New(mIsolate, nullptr, globalTemplate);
+    context->Enter();
+    auto global = context->Global();
+    global->DefineOwnProperty(context, ArgConverter::ConvertToV8String(mIsolate, "global"), global, readOnlyFlags);
+    global->DefineOwnProperty(context, ArgConverter::ConvertToV8String(mIsolate, "__global"), global, readOnlyFlags);
 
-            // Convert the result to an UTF8 string and print it.
-            v8::String::Utf8Value utf8(isolate, result);
-            LOGI("v8engine %s", *utf8);
-        }
-//
-    }
+    // attach the context to the persistent context, to avoid V8 GC-ing it
+    mPersistentContext.Reset(mIsolate, context);
 
-    // Dispose the isolate and tear down V8.
-    isolate->Dispose();
-    v8::V8::Dispose();
-    v8::V8::ShutdownPlatform();
-    delete platform;
-    delete create_params.array_buffer_allocator;
-    std::string hello = "Hello from C";
+//    InspectorClient::GetInstance()->init();
+}
+
+extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_init(JNIEnv *env, jobject object) {
+//    InspectorClient::GetInstance()->init();
+}
+
+extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_connect(JNIEnv *env, jobject instance, jobject connection) {
+//    InspectorClient::GetInstance()->connect(connection);
+}
+
+extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_scheduleBreak(JNIEnv *env, jobject instance) {
+//    InspectorClient::GetInstance()->scheduleBreak();
+}
+
+extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_disconnect(JNIEnv *env, jobject instance) {
+//    InspectorClient::GetInstance()->disconnect();
+}
+
+extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_dispatchMessage(JNIEnv *env, jobject instance, jstring jMessage) {
+//    std::string message = ArgConverter::jstringToString(jMessage);
+//    InspectorClient::GetInstance()->dispatchMessage(message);
+}
+
+extern "C" JNIEXPORT jstring JNICALL Java_com_example_zhanfang_test_V8_stringFromJNI(JNIEnv *env, jobject /* this */) {
+    std::string hello = "Hello v8 from C++!\n";
+
+    v8::Isolate::Scope isolate_scope(mIsolate);
+    v8::HandleScope handle_scope(mIsolate);
+
+    // Enter the context for compiling and running the hello world script.
+    v8::Local<v8::Context> context = v8::Local<v8::Context>::New(mIsolate, mPersistentContext);
+    v8::Context::Scope context_scope(context);
+
+    // Create a string containing the JavaScript source code.
+    v8::Local<v8::String> source = v8::String::NewFromUtf8(
+            mIsolate, "'Hello' + ', from Javascript!'", v8::NewStringType::kNormal).ToLocalChecked();
+
+    // Compile the source code.
+    v8::Local<v8::Script> script =
+            v8::Script::Compile(context, source).ToLocalChecked();
+
+    // Run the script to get the result.
+    v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
+
+    // Convert the result to an UTF8 string and print it.
+    v8::String::Utf8Value utf8(result);
+    printf("%s\n", *utf8);
+    hello += *utf8;
+
     return env->NewStringUTF(hello.c_str());
 }
 
-void Print(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    v8::String::Utf8Value str(args[0]);
-    const char* cstr = ToCString(str);
-    LOGI("v8engine print %s", cstr);
+extern "C" JNIEXPORT jstring JNICALL Java_com_example_zhanfang_test_V8_stringFromJNI2(JNIEnv *env, jobject /* this */) {
+    std::string hello = "\n\n";
+
+    v8::Isolate::Scope isolate_scope(mIsolate);
+    v8::HandleScope handle_scope(mIsolate);
+
+    // Enter the context for compiling and running the hello world script.
+    v8::Local<v8::Context> context = v8::Local<v8::Context>::New(mIsolate, mPersistentContext);
+    v8::Context::Scope context_scope(context);
+
+    // Create a string containing the JavaScript source code.
+    v8::Local<v8::String> source = v8::String::NewFromUtf8(
+            mIsolate, "'Hello2' + ', from Javascript2!'", v8::NewStringType::kNormal).ToLocalChecked();
+
+    // Compile the source code.
+    v8::Local<v8::Script> script =
+            v8::Script::Compile(context, source).ToLocalChecked();
+
+    // Run the script to get the result.
+    v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
+
+    // Convert the result to an UTF8 string and print it.
+    v8::String::Utf8Value utf8(result);
+    printf("%s\n", *utf8);
+    hello += *utf8;
+
+    return env->NewStringUTF(hello.c_str());
 }
-
-v8::Local<v8::Context> CreateShellContext(v8::Isolate* isolate) {
-
-    v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
-    // Bind the global 'print' function to the C++ Print callback.
-    global->Set(
-            v8::String::NewFromUtf8(isolate, "print", v8::NewStringType::kNormal)
-                    .ToLocalChecked(),
-            v8::FunctionTemplate::New(isolate, Print));
-    return v8::Context::New(isolate, NULL, global);
-}
-
-
-//extern "C" JNIEXPORT jstring
-//JNICALL
-//Java_com_example_zhanfang_test_MainActivity_runScript(
-//        JNIEnv *env,
-//        jobject /* this */) {
-//    V8Engine v8engine;
-//    v8engine.hello();
-//    v8engine.destory();
-//}
