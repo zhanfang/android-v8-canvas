@@ -1,5 +1,6 @@
 package com.example.zhanfang.test;
 
+import android.util.Log;
 import android.util.Pair;
 import android.webkit.MimeTypeMap;
 import android.os.Handler;
@@ -143,7 +144,7 @@ public class V8Inspector {
 
     public void start() throws IOException {
         if (this.server == null) {
-
+            Log.i("zhan", this.packageName + "_devtools_remote");
             this.server = new V8InspectorServer(this.packageName + "_devtools_remote");
             this.server.start(-1);
 

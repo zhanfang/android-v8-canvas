@@ -22,6 +22,8 @@ if ( NOT OPTIMIZED_BUILD OR OPTIMIZED_WITH_INSPECTOR_BUILD )
     set(
         INSPECTOR_SOURCES
 
+        src/main/cpp/InspectorClient.cpp
+
         src/main/cpp/v8_inspector/src/inspector/protocol/Console.cpp
         src/main/cpp/v8_inspector/src/inspector/protocol/Debugger.cpp
         src/main/cpp/v8_inspector/src/inspector/protocol/HeapProfiler.cpp
@@ -72,33 +74,37 @@ add_library(
     SHARED
 
     # Runtime source
-    src/main/cpp/V8Engine.cpp
     src/main/cpp/Util.cpp
     src/main/cpp/ArgConverter.cpp
-    src/main/cpp/JEnv
+    src/main/cpp/JEnv.cpp
+    src/main/cpp/com_inspector_runtime.cpp
 
     # V8 inspector source files will be included only in Release mode
     ${INSPECTOR_SOURCES}
+
+    src/main/cpp/V8Engine.cpp
 )
 
-find_library( # Sets the name of the path variable.
-              log-lib
+set_target_properties(v8.engine PROPERTIES LINK_FLAGS -Wl,--allow-multiple-definition)
 
-              # Specifies the name of the NDK library that
-              # you want CMake to locate.
-              log )
+target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libzip.a )
+target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_base.a )
+target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_init.a )
+target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_initializers.a )
+target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_libplatform.a )
+target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_libsampler.a )
+target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_libbase.a )
+target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_snapshot.a )
+
+find_library( system-log log )
+find_library( system-android android )
+find_library( system-dl dl )
+find_library( system-atomic atomic ) # TODO: plamen5kov: can't be found in ndk for some reasong ... look at it later (maybe deprecated in newer NDK versions)
+find_library( system-z z )
+find_library( log-lib log )
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
 
-target_link_libraries( v8.engine ${log-lib} ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libzip.a )
-target_link_libraries( v8.engine ${log-lib} ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_base.a )
-target_link_libraries( v8.engine ${log-lib} ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_init.a )
-target_link_libraries( v8.engine ${log-lib} ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_initializers.a )
-target_link_libraries( v8.engine ${log-lib} ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_libplatform.a )
-target_link_libraries( v8.engine ${log-lib} ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_libsampler.a )
-target_link_libraries( v8.engine ${log-lib} ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_libbase.a )
-target_link_libraries( v8.engine ${log-lib} ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_snapshot.a )
-
-
+target_link_libraries(v8.engine ${system-log} ${system-android} ${system-dl} ${system-z} ${log-lib} )

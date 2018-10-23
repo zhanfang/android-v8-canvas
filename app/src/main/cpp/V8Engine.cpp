@@ -1,12 +1,10 @@
 #include <jni.h>
-#include <os-android.h>
 #include <libplatform/libplatform.h>
 #include <v8-inspector.h>
-#include <macros.h>
 
 #include "V8Engine.h"
 #include "ArgConverter.h"
-//#include "InspectorClient.h"
+#include "InspectorClient.h"
 
 using namespace tns;
 using namespace std;
@@ -51,28 +49,28 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
     // attach the context to the persistent context, to avoid V8 GC-ing it
     mPersistentContext.Reset(mIsolate, context);
 
-//    InspectorClient::GetInstance()->init();
+    InspectorClient::GetInstance()->init();
 }
 
 extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_init(JNIEnv *env, jobject object) {
-//    InspectorClient::GetInstance()->init();
+    InspectorClient::GetInstance()->init();
 }
 
 extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_connect(JNIEnv *env, jobject instance, jobject connection) {
-//    InspectorClient::GetInstance()->connect(connection);
+    InspectorClient::GetInstance()->connect(connection);
 }
 
 extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_scheduleBreak(JNIEnv *env, jobject instance) {
-//    InspectorClient::GetInstance()->scheduleBreak();
+    InspectorClient::GetInstance()->scheduleBreak();
 }
 
 extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_disconnect(JNIEnv *env, jobject instance) {
-//    InspectorClient::GetInstance()->disconnect();
+    InspectorClient::GetInstance()->disconnect();
 }
 
 extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_dispatchMessage(JNIEnv *env, jobject instance, jstring jMessage) {
-//    std::string message = ArgConverter::jstringToString(jMessage);
-//    InspectorClient::GetInstance()->dispatchMessage(message);
+    std::string message = ArgConverter::jstringToString(jMessage);
+    InspectorClient::GetInstance()->dispatchMessage(message);
 }
 
 extern "C" JNIEXPORT jstring JNICALL Java_com_example_zhanfang_test_V8_stringFromJNI(JNIEnv *env, jobject /* this */) {

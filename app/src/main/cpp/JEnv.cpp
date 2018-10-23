@@ -632,14 +632,14 @@ jclass JEnv::FindClass(const string& className) {
     if (global_class == nullptr) {
         jclass tmp = m_env->FindClass(className.c_str());
 
-        if (m_env->ExceptionCheck() == JNI_TRUE) {
-            m_env->ExceptionClear();
-            string cannonicalClassName = Util::ConvertFromJniToCanonicalName(className);
-            jstring s = m_env->NewStringUTF(cannonicalClassName.c_str());
-            tmp = static_cast<jclass>(m_env->CallStaticObjectMethod(RUNTIME_CLASS, GET_CACHED_CLASS_METHOD_ID, s));
-
-            m_env->DeleteLocalRef(s);
-        }
+//        if (m_env->ExceptionCheck() == JNI_TRUE) {
+//            m_env->ExceptionClear();
+//            string cannonicalClassName = Util::ConvertFromJniToCanonicalName(className);
+//            jstring s = m_env->NewStringUTF(cannonicalClassName.c_str());
+//            tmp = static_cast<jclass>(m_env->CallStaticObjectMethod(RUNTIME_CLASS, GET_CACHED_CLASS_METHOD_ID, s));
+//
+//            m_env->DeleteLocalRef(s);
+//        }
 
         global_class = InsertClassIntoCache(className, tmp);
     }
@@ -693,11 +693,11 @@ void JEnv::Init(JavaVM* jvm) {
     assert(jvm != nullptr);
     s_jvm = jvm;
 
-    JEnv env;
-    RUNTIME_CLASS = env.FindClass("com/tns/Runtime");
-    assert(RUNTIME_CLASS != nullptr);
-    GET_CACHED_CLASS_METHOD_ID = env.GetStaticMethodID(RUNTIME_CLASS, "getCachedClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-    assert(GET_CACHED_CLASS_METHOD_ID != nullptr);
+//    JEnv env;
+//    RUNTIME_CLASS = env.FindClass("com/tns/Runtime");
+//    assert(RUNTIME_CLASS != nullptr);
+//    GET_CACHED_CLASS_METHOD_ID = env.GetStaticMethodID(RUNTIME_CLASS, "getCachedClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+//    assert(GET_CACHED_CLASS_METHOD_ID != nullptr);
 }
 
 jclass JEnv::GetObjectClass(jobject obj) {

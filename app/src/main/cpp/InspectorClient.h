@@ -6,30 +6,17 @@
 #define INSPECTORCLIENT_H_
 
 #include <v8.h>
-#include <jni.h>
 #include <v8-inspector.h>
 #include "JEnv.h"
+#include "src/inspector/v8-inspector-impl.h"
+#include "src/inspector/v8-inspector-session-impl.h"
+#include "src/inspector/protocol/Forward.h"
+#include "src/inspector/string-16.h"
+#include "V8Engine.h"
 
-using namespace v8;
 using namespace v8_inspector;
 
-class InspectorClient : public v8_inspector::V8InspectorClient {
-private:
-    InspectorClient(v8::Isolate* isolate);
-
-    static InspectorClient* instance;
-    static jclass inspectorClass;
-    static jmethodID sendMethod;
-    static jmethodID getInspectorMessageMethod;
-    static jmethodID sendToDevToolsConsoleMethod;
-    static int contextGroupId;
-
-    v8::Persistent<v8::Context> context_;
-    std::unique_ptr<V8InspectorSession> session_;
-    jobject connection;
-    bool running_nested_loop_;
-    bool terminated_;
-
+class InspectorClient : V8InspectorClient, v8_inspector::V8Inspector::Channel {
 public:
     static InspectorClient* GetInstance();
 
@@ -63,7 +50,23 @@ public:
     std::unique_ptr<V8Inspector> inspector_;
     v8::Isolate* isolate_;
     bool isConnected;
+
+private:
+    InspectorClient(v8::Isolate* isolate);
+
+    static InspectorClient* instance;
+    static jclass inspectorClass;
+    static jmethodID sendMethod;
+    static jmethodID getInspectorMessageMethod;
+    static jmethodID sendToDevToolsConsoleMethod;
+    static int contextGroupId;
+
+    v8::Persistent<v8::Context> context_;
+    std::unique_ptr<V8InspectorSession> session_;
+    jobject connection;
+    bool running_nested_loop_;
+    bool terminated_;
 };
 
 
-#endif /* JSV8INSPECTORCLIENT_H_ */
+#endif /* INSPECTORCLIENT_H_ */
