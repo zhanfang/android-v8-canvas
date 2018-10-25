@@ -13,6 +13,8 @@ std::unique_ptr<v8::Platform> platform;
 v8::Isolate *mIsolate;
 v8::Persistent<v8::Context> mPersistentContext;
 
+
+
 extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
         JNIEnv *env,
         jobject /* this */) {
@@ -51,6 +53,21 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
 
     InspectorClient::GetInstance()->init();
 }
+
+//extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
+//        JNIEnv *env, jobject obj, jlong nativeV8Engine, jstring file) {
+//    auto engine  = reinterpret_cast<V8Engine*>(nativeV8Engine);
+//    v8::Isolate* isolate = engine->getIsolate();
+//    v8::Locker l(isolate);
+//    v8::Isolate::Scope isolateScope(isolate);
+//    v8::HandleScope scope(isolate);
+//    v8::Local<v8::Context> context = engine->getContext();
+//    v8::Context::Scope ctxScope(context);
+//
+//    v8::TryCatch try_catch;
+//    engine->require(ConvertJavaStringToUTF8(env, file));
+//    return;
+//}
 
 extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_init(JNIEnv *env, jobject object) {
     InspectorClient::GetInstance()->init();

@@ -77,6 +77,7 @@ add_library(
     src/main/cpp/Util.cpp
     src/main/cpp/ArgConverter.cpp
     src/main/cpp/JEnv.cpp
+    src/main/cpp/JType.cpp
     src/main/cpp/com_inspector_runtime.cpp
 
     # V8 inspector source files will be included only in Release mode

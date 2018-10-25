@@ -1,6 +1,9 @@
 #include <v8.h>
+#include <include/libplatform/libplatform.h>
+#include <assert.h>
 #include "ArgConverter.h"
 #include "InspectorClient.h"
+#include "JniLocalRef.h"
 //#include "v8_inspector/src/inspector/v8-log-agent-impl.h"
 #include "V8Engine.h"
 
@@ -79,26 +82,25 @@ void InspectorClient::dispatchMessage(const std::string& message) {
 }
 
 void InspectorClient::runMessageLoopOnPause(int context_group_id) {
-//    if (running_nested_loop_) {
-//        return;
-//    }
-//
-//    JEnv env;
-//
-//    terminated_ = false;
-//    running_nested_loop_ = true;
-//    while (!terminated_) {
-//        JniLocalRef msg(env.CallStaticObjectMethod(inspectorClass, getInspectorMessageMethod, this->connection));
-//        if (!msg.IsNull()) {
-//            auto inspectorMessage = ArgConverter::jstringToString(msg);
-//            this->doDispatchMessage(this->isolate_, inspectorMessage);
-//        }
-//
-//        while (v8::platform::PumpMessageLoop(Runtime::platform, isolate_)) {
-//        }
-//    }
-//    terminated_ = false;
-//    running_nested_loop_ = false;
+    if (running_nested_loop_) {
+        return;
+    }
+
+    JEnv env;
+
+    terminated_ = false;
+    running_nested_loop_ = true;
+    while (!terminated_) {
+        JniLocalRef msg(env.CallStaticObjectMethod(inspectorClass, getInspectorMessageMethod, this->connection));
+        if (!msg.IsNull()) {
+            auto inspectorMessage = ArgConverter::jstringToString(msg);
+            this->doDispatchMessage(this->isolate_, inspectorMessage);
+        }
+
+        while (v8::platform::PumpMessageLoop(platform, isolate_)) {}
+    }
+    terminated_ = false;
+    running_nested_loop_ = false;
 }
 
 void InspectorClient::quitMessageLoopOnPause() {
@@ -133,16 +135,16 @@ static v8_inspector::String16 ToString16(const v8_inspector::StringView& string)
 }
 
 void InspectorClient::sendNotification(std::unique_ptr<StringBuffer> message) {
-//    if (inspectorClass == nullptr || this->connection == nullptr) {
-//        return;
-//    }
-//
-//    v8_inspector::String16 msg = ToString16(message->string());
-//
-//    JEnv env;
-//    // TODO: Pete: Check if we can use a wide (utf 16) string here
-//    JniLocalRef str(env.NewStringUTF(msg.utf8().c_str()));
-//    env.CallStaticVoidMethod(inspectorClass, sendMethod, this->connection, (jstring) str);
+    if (inspectorClass == nullptr || this->connection == nullptr) {
+        return;
+    }
+
+    v8_inspector::String16 msg = ToString16(message->string());
+
+    JEnv env;
+    // TODO: Pete: Check if we can use a wide (utf 16) string here
+    JniLocalRef str(env.NewStringUTF(msg.utf8().c_str()));
+    env.CallStaticVoidMethod(inspectorClass, sendMethod, this->connection, (jstring) str);
 }
 
 void InspectorClient::flushProtocolNotifications() {

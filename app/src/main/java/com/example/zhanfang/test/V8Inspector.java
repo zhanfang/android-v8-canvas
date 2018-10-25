@@ -144,7 +144,7 @@ public class V8Inspector {
 
     public void start() throws IOException {
         if (this.server == null) {
-            Log.i("zhan", this.packageName + "_devtools_remote");
+            Log.i("debug", this.packageName + "_devtools_remote");
             this.server = new V8InspectorServer(this.packageName + "_devtools_remote");
             this.server.start(-1);
 
