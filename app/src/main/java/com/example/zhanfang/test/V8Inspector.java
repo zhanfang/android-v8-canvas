@@ -9,7 +9,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,6 +25,7 @@ import fi.iki.elonen.NanoWSD;
 public class V8Inspector {
     private String packageName;
     private final Object debugLocker;
+    private static String ApplicationDir;
 
     private Handler mainHandler;
 
@@ -28,7 +35,7 @@ public class V8Inspector {
     private LinkedBlockingQueue<String> pendingInspectorMessages = new LinkedBlockingQueue<String>();
 
     public V8Inspector(String packageName, Handler handler) {
-
+        ApplicationDir = "/data/user";
         this.packageName = packageName;
         this.debugLocker = new Object();
         mainHandler = handler;
@@ -91,6 +98,49 @@ public class V8Inspector {
         @Override
         public void send(String payload) throws IOException {
             super.send(payload);
+        }
+
+        private String getInspectorMessage(Object connection) {
+            return ((V8InspectorWebSocket) connection).getInspectorMessage();
+        }
+
+        public  Pair<String, String>[] getPageResources() {
+            // necessary to align the data dir returned by context (emulator) and that used by the v8 inspector
+            if (ApplicationDir.startsWith("/data/user/0/")) {
+                ApplicationDir = ApplicationDir.replaceFirst("/data/user/0/", "/data/data/");
+            }
+
+            String dataDir = ApplicationDir;
+            File rootFilesDir = new File(dataDir, "app");
+
+
+            List<Pair<String, String>> resources = traverseResources(rootFilesDir);
+
+            @SuppressWarnings("unchecked")
+            Pair<String, String>[] result = resources.toArray((Pair<String, String>[]) Array.newInstance(resources.get(0).getClass(), resources.size()));
+            return result;
+        }
+
+        private  List<Pair<String, String>> traverseResources(File dir) {
+            List<Pair<String, String>> resources = new ArrayList<>();
+
+            Queue<File> directories = new LinkedList<>();
+            directories.add(dir);
+
+            while (!directories.isEmpty()) {
+                File currentDir = directories.poll();
+
+                File[] files = currentDir.listFiles();
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        directories.add(file);
+                    } else {
+                        resources.add(new Pair<>("file://" + file.getAbsolutePath(), getMimeType(file.getAbsolutePath())));
+                    }
+                }
+            }
+
+            return resources;
         }
 
         public String getInspectorMessage() {

@@ -13,8 +13,6 @@ std::unique_ptr<v8::Platform> platform;
 v8::Isolate *mIsolate;
 v8::Persistent<v8::Context> mPersistentContext;
 
-
-
 extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
         JNIEnv *env,
         jobject /* this */) {

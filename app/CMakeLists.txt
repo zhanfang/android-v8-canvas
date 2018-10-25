@@ -26,7 +26,9 @@ if ( NOT OPTIMIZED_BUILD OR OPTIMIZED_WITH_INSPECTOR_BUILD )
 
         src/main/cpp/v8_inspector/src/inspector/protocol/Console.cpp
         src/main/cpp/v8_inspector/src/inspector/protocol/Debugger.cpp
+        src/main/cpp/v8_inspector/src/inspector/protocol/DOM.cpp
         src/main/cpp/v8_inspector/src/inspector/protocol/HeapProfiler.cpp
+        src/main/cpp/v8_inspector/src/inspector/protocol/Page.cpp
         src/main/cpp/v8_inspector/src/inspector/protocol/Profiler.cpp
         src/main/cpp/v8_inspector/src/inspector/protocol/Protocol.cpp
         src/main/cpp/v8_inspector/src/inspector/protocol/Runtime.cpp
@@ -34,6 +36,10 @@ if ( NOT OPTIMIZED_BUILD OR OPTIMIZED_WITH_INSPECTOR_BUILD )
 
         src/main/cpp/v8_inspector/src/inspector/utils/base64.cpp
         src/main/cpp/v8_inspector/src/inspector/utils/v8-network-request-data.cpp
+        src/main/cpp/v8_inspector/src/inspector/utils/v8-page-resources.cpp
+        src/main/cpp/v8_inspector/src/inspector/utils/v8-inspector-common.cpp
+
+        src/main/cpp/v8_inspector/src/inspector/v8-page-agent-impl.cpp
 
         src/main/cpp/v8_inspector/src/inspector/injected-script.cc
         src/main/cpp/v8_inspector/src/inspector/inspected-context.cc

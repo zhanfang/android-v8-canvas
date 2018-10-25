@@ -11,6 +11,7 @@
 #include "src/inspector/protocol/Forward.h"
 #include "src/inspector/protocol/Runtime.h"
 #include "src/inspector/protocol/Schema.h"
+#include "src/inspector/protocol/Page.h"
 
 #include "include/v8-inspector.h"
 
@@ -25,6 +26,7 @@ namespace v8_inspector {
     class V8ProfilerAgentImpl;
     class V8RuntimeAgentImpl;
     class V8SchemaAgentImpl;
+    class V8PageAgentImpl;
 
     using protocol::Response;
 
@@ -42,6 +44,10 @@ namespace v8_inspector {
         V8SchemaAgentImpl* schemaAgent() { return m_schemaAgent.get(); }
         V8ProfilerAgentImpl* profilerAgent() { return m_profilerAgent.get(); }
         V8RuntimeAgentImpl* runtimeAgent() { return m_runtimeAgent.get(); }
+        V8PageAgentImpl* pageAgent() {
+            return m_pageAgent.get();
+        }
+
         int contextGroupId() const { return m_contextGroupId; }
         int sessionId() const { return m_sessionId; }
 
@@ -118,6 +124,7 @@ namespace v8_inspector {
         std::unique_ptr<V8ProfilerAgentImpl> m_profilerAgent;
         std::unique_ptr<V8ConsoleAgentImpl> m_consoleAgent;
         std::unique_ptr<V8SchemaAgentImpl> m_schemaAgent;
+        std::unique_ptr<V8PageAgentImpl> m_pageAgent;
         std::vector<std::unique_ptr<V8InspectorSession::Inspectable>>
                 m_inspectedObjects;
 

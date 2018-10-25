@@ -97,7 +97,7 @@ void InspectorClient::runMessageLoopOnPause(int context_group_id) {
             this->doDispatchMessage(this->isolate_, inspectorMessage);
         }
 
-        while (v8::platform::PumpMessageLoop(platform, isolate_)) {}
+//        while (v8::platform::PumpMessageLoop(platform, isolate_)) {}
     }
     terminated_ = false;
     running_nested_loop_ = false;
