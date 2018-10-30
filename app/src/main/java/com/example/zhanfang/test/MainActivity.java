@@ -1,5 +1,6 @@
 package com.example.zhanfang.test;
 
+import android.app.Application;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.TextView;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.io.File;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,6 +23,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         V8.initV8();
+
+        // 移动前端源文件
+        final Application app = MainApplication.getInstance();
+
+        DefaultExtractPolicy extractPolicy = new DefaultExtractPolicy();
+        AssetExtractor aE = new AssetExtractor(null);
+        String outputDir = app.getFilesDir().getPath() + File.separator;
+
+        // will force deletion of previously extracted files in app/files directories
+        // see https://github.com/NativeScript/NativeScript/issues/4137 for reference
+        boolean removePreviouslyInstalledAssets = true;
+        aE.extractAssets(app, "app", outputDir, extractPolicy, removePreviouslyInstalledAssets);
+        extractPolicy.setAssetsThumb(app);
+
+        V8.require("/data/data/com.example.zhanfang.test/files/app/test.js");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -40,7 +57,10 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 try {
                     V8Inspector v8Inspector =
-                            new V8Inspector(MainApplication.getContext().getPackageName(), handler);
+                            new V8Inspector(
+                                    app.getFilesDir().getAbsolutePath(),
+                                    app.getPackageName(),
+                                    handler);
                     v8Inspector.start();
                     v8Inspector.waitForDebugger(false);
                 } catch (IOException e) {

@@ -21,4 +21,6 @@ public class V8 {
 
     public static native void dispatchMessage(String message);
 
+    public static native void require(String filePath);
+
 }

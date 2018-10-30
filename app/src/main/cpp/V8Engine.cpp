@@ -2,6 +2,7 @@
 #include <libplatform/libplatform.h>
 #include <v8-inspector.h>
 
+#include "File.h"
 #include "V8Engine.h"
 #include "ArgConverter.h"
 #include "InspectorClient.h"
@@ -52,20 +53,34 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
     InspectorClient::GetInstance()->init();
 }
 
-//extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
-//        JNIEnv *env, jobject obj, jlong nativeV8Engine, jstring file) {
-//    auto engine  = reinterpret_cast<V8Engine*>(nativeV8Engine);
-//    v8::Isolate* isolate = engine->getIsolate();
-//    v8::Locker l(isolate);
-//    v8::Isolate::Scope isolateScope(isolate);
-//    v8::HandleScope scope(isolate);
-//    v8::Local<v8::Context> context = engine->getContext();
-//    v8::Context::Scope ctxScope(context);
-//
-//    v8::TryCatch try_catch;
-//    engine->require(ConvertJavaStringToUTF8(env, file));
-//    return;
-//}
+extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
+        JNIEnv *env, jobject obj, jstring filePath) {
+    auto isolate = mIsolate;
+    v8::Isolate::Scope isolate_scope(isolate);
+    v8::HandleScope handle_scope(isolate);
+
+    v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate, mPersistentContext);
+    auto filename = ArgConverter::jstringToString(filePath);
+    auto src = File::ReadText(filename);
+
+    auto source = ArgConverter::ConvertToV8String(mIsolate, src);
+
+    auto originName = "file://" + filename;
+
+    v8::TryCatch tc(isolate);
+
+    v8::Local<v8::Script> script;
+    v8::ScriptOrigin origin(ArgConverter::ConvertToV8String(isolate, originName));
+
+    auto maybeScript = v8::Script::Compile(context, source, &origin).ToLocal(&script);
+
+    if (!script.IsEmpty()) {
+        v8::Local<v8::Value> result;
+        auto maybeResult = script->Run(context).ToLocal(&result);
+    }
+
+    return;
+}
 
 extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_init(JNIEnv *env, jobject object) {
     InspectorClient::GetInstance()->init();

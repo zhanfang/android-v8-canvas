@@ -24,6 +24,8 @@ import fi.iki.elonen.NanoWSD;
 
 public class V8Inspector {
     private String packageName;
+    private V8InspectorServer server;
+
     private final Object debugLocker;
     private static String ApplicationDir;
 
@@ -34,15 +36,51 @@ public class V8Inspector {
     private LinkedBlockingQueue<String> inspectorMessages = new LinkedBlockingQueue<String>();
     private LinkedBlockingQueue<String> pendingInspectorMessages = new LinkedBlockingQueue<String>();
 
-    public V8Inspector(String packageName, Handler handler) {
-        ApplicationDir = "/data/user";
+    V8Inspector(String filesDir, String packageName, Handler handler) {
+        ApplicationDir = filesDir;
         this.packageName = packageName;
         this.debugLocker = new Object();
         mainHandler = handler;
-
     }
 
-    private V8InspectorServer server;
+    public static Pair<String, String>[] getPageResources() {
+        // necessary to align the data dir returned by context (emulator) and that used by the v8 inspector
+        if (ApplicationDir.startsWith("/data/user/0/")) {
+            ApplicationDir = ApplicationDir.replaceFirst("/data/user/0/", "/data/data/");
+        }
+
+        String dataDir = ApplicationDir;
+        File rootFilesDir = new File(dataDir, "app");
+
+
+        List<Pair<String, String>> resources = traverseResources(rootFilesDir);
+
+        @SuppressWarnings("unchecked")
+        Pair<String, String>[] result = resources.toArray((Pair<String, String>[]) Array.newInstance(resources.get(0).getClass(), resources.size()));
+        return result;
+    }
+
+    private static List<Pair<String, String>> traverseResources(File dir) {
+        List<Pair<String, String>> resources = new ArrayList<>();
+
+        Queue<File> directories = new LinkedList<>();
+        directories.add(dir);
+
+        while (!directories.isEmpty()) {
+            File currentDir = directories.poll();
+
+            File[] files = currentDir.listFiles();
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    directories.add(file);
+                } else {
+                    resources.add(new Pair<>("file://" + file.getAbsolutePath(), getMimeType(file.getAbsolutePath())));
+                }
+            }
+        }
+
+        return resources;
+    }
 
     private class V8InspectorWebSocket extends NanoWSD.WebSocket {
         V8InspectorWebSocket(NanoHTTPD.IHTTPSession handshakeRequest) {
@@ -102,45 +140,6 @@ public class V8Inspector {
 
         private String getInspectorMessage(Object connection) {
             return ((V8InspectorWebSocket) connection).getInspectorMessage();
-        }
-
-        public  Pair<String, String>[] getPageResources() {
-            // necessary to align the data dir returned by context (emulator) and that used by the v8 inspector
-            if (ApplicationDir.startsWith("/data/user/0/")) {
-                ApplicationDir = ApplicationDir.replaceFirst("/data/user/0/", "/data/data/");
-            }
-
-            String dataDir = ApplicationDir;
-            File rootFilesDir = new File(dataDir, "app");
-
-
-            List<Pair<String, String>> resources = traverseResources(rootFilesDir);
-
-            @SuppressWarnings("unchecked")
-            Pair<String, String>[] result = resources.toArray((Pair<String, String>[]) Array.newInstance(resources.get(0).getClass(), resources.size()));
-            return result;
-        }
-
-        private  List<Pair<String, String>> traverseResources(File dir) {
-            List<Pair<String, String>> resources = new ArrayList<>();
-
-            Queue<File> directories = new LinkedList<>();
-            directories.add(dir);
-
-            while (!directories.isEmpty()) {
-                File currentDir = directories.poll();
-
-                File[] files = currentDir.listFiles();
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        directories.add(file);
-                    } else {
-                        resources.add(new Pair<>("file://" + file.getAbsolutePath(), getMimeType(file.getAbsolutePath())));
-                    }
-                }
-            }
-
-            return resources;
         }
 
         public String getInspectorMessage() {
@@ -267,11 +266,6 @@ public class V8Inspector {
 
     private static String getInspectorMessage(Object connection) {
         return ((V8Inspector.V8InspectorWebSocket) connection).getInspectorMessage();
-    }
-
-    public static Pair<String, String>[] getPageResources() {
-
-        return null;
     }
 
     private static String getMimeType(String url) {

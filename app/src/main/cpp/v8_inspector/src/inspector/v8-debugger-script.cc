@@ -9,6 +9,8 @@
 #include "src/inspector/wasm-translation.h"
 #include "src/utils.h"
 
+#include "ArgConverter.h"
+
 namespace v8_inspector {
 
 namespace {

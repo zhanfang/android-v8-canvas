@@ -40,7 +40,11 @@ std::map<std::string, v8_inspector::utils::PageResource> PageResource::getPageRe
     assert(pairSecond != nullptr);
 
     jmethodID getResourcesMethod = env.GetStaticMethodID(inspectorClass, "getPageResources", "()[Landroid/util/Pair;");
+    assert(getResourcesMethod != nullptr);
+
     jobject arrayOfPairs = env.CallStaticObjectMethod(inspectorClass, getResourcesMethod);
+    assert(arrayOfPairs != nullptr);
+
     tns::JniLocalRef pairs(static_cast<jobjectArray>(arrayOfPairs));
     int arrSize = env.GetArrayLength(pairs);
 
