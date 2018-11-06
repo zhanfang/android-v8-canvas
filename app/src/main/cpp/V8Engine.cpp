@@ -1,5 +1,4 @@
 #include <jni.h>
-#include <libplatform/libplatform.h>
 #include <v8-inspector.h>
 
 #include "File.h"
@@ -10,7 +9,7 @@
 using namespace tns;
 using namespace std;
 
-std::unique_ptr<v8::Platform> platform;
+v8::Platform* platform_;
 v8::Isolate *mIsolate;
 v8::Persistent<v8::Context> mPersistentContext;
 
@@ -19,8 +18,8 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
         jobject /* this */) {
     // Initialize V8.
     v8::V8::InitializeICU();
-    platform = v8::platform::NewDefaultPlatform();
-    v8::V8::InitializePlatform(&(*platform.get()));
+    platform_ = v8::platform::CreateDefaultPlatform();
+    v8::V8::InitializePlatform(platform_);
     v8::V8::Initialize();
 
     // Create a new Isolate and make it the current one.
@@ -72,6 +71,8 @@ extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
     v8::Local<v8::Script> script;
     v8::ScriptOrigin origin(ArgConverter::ConvertToV8String(isolate, originName));
 
+//    InspectorClient::GetInstance()->scheduleBreak();
+
     auto maybeScript = v8::Script::Compile(context, source, &origin).ToLocal(&script);
 
     if (!script.IsEmpty()) {
@@ -88,6 +89,10 @@ extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_init(JNIEnv *env, jo
 
 extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_connect(JNIEnv *env, jobject instance, jobject connection) {
     InspectorClient::GetInstance()->connect(connection);
+}
+
+extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_waitForFrontend(JNIEnv *env, jobject instance, jobject connection) {
+    InspectorClient::GetInstance()->waitForFrontend();
 }
 
 extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_scheduleBreak(JNIEnv *env, jobject instance) {

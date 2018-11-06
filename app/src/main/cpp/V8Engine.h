@@ -5,6 +5,8 @@
 #include <jni.h>
 #include <v8.h>
 
-extern std::unique_ptr<v8::Platform> platform;
+#include "libplatform/libplatform.h"
+
+extern v8::Platform* platform_;
 extern v8::Isolate *mIsolate;
 extern v8::Persistent<v8::Context> mPersistentContext;

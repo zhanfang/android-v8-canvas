@@ -12,6 +12,7 @@
 #include "src/inspector/protocol/Runtime.h"
 #include "src/inspector/protocol/Schema.h"
 #include "src/inspector/protocol/Page.h"
+#include "src/inspector/protocol/Overlay.h"
 
 #include "include/v8-inspector.h"
 
@@ -27,6 +28,7 @@ namespace v8_inspector {
     class V8RuntimeAgentImpl;
     class V8SchemaAgentImpl;
     class V8PageAgentImpl;
+    class V8OverlayAgentImpl;
 
     using protocol::Response;
 
@@ -46,6 +48,9 @@ namespace v8_inspector {
         V8RuntimeAgentImpl* runtimeAgent() { return m_runtimeAgent.get(); }
         V8PageAgentImpl* pageAgent() {
             return m_pageAgent.get();
+        }
+        V8OverlayAgentImpl* overlayAgent() {
+            return m_overlayAgent.get();
         }
 
         int contextGroupId() const { return m_contextGroupId; }
@@ -125,6 +130,7 @@ namespace v8_inspector {
         std::unique_ptr<V8ConsoleAgentImpl> m_consoleAgent;
         std::unique_ptr<V8SchemaAgentImpl> m_schemaAgent;
         std::unique_ptr<V8PageAgentImpl> m_pageAgent;
+        std::unique_ptr<V8OverlayAgentImpl> m_overlayAgent;
         std::vector<std::unique_ptr<V8InspectorSession::Inspectable>>
                 m_inspectedObjects;
 

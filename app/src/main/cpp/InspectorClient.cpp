@@ -81,7 +81,7 @@ void InspectorClient::dispatchMessage(const std::string& message) {
     this->doDispatchMessage(isolate_, message);
 }
 
-void InspectorClient::runMessageLoopOnPause(int context_group_id) {
+void InspectorClient::runMessageLoop() {
     if (running_nested_loop_) {
         return;
     }
@@ -97,10 +97,20 @@ void InspectorClient::runMessageLoopOnPause(int context_group_id) {
             this->doDispatchMessage(this->isolate_, inspectorMessage);
         }
 
-//        while (v8::platform::PumpMessageLoop(platform, isolate_)) {}
+        while (v8::platform::PumpMessageLoop(platform_, isolate_)) {}
     }
     terminated_ = false;
     running_nested_loop_ = false;
+}
+
+void InspectorClient::runMessageLoopOnPause(int context_group_id) {
+    this->waiting_for_resume_ = true;
+    this->runMessageLoop();
+}
+
+void InspectorClient::waitForFrontend() {
+    this->waiting_for_frontend_ = true;
+    this->runMessageLoop();
 }
 
 void InspectorClient::quitMessageLoopOnPause() {
@@ -147,8 +157,7 @@ void InspectorClient::sendNotification(std::unique_ptr<StringBuffer> message) {
     env.CallStaticVoidMethod(inspectorClass, sendMethod, this->connection, (jstring) str);
 }
 
-void InspectorClient::flushProtocolNotifications() {
-}
+void InspectorClient::flushProtocolNotifications() {}
 
 template<class TypeName>
 inline v8::Local<TypeName> StrongPersistentToLocal(const v8::Persistent<TypeName>& persistent) {
@@ -263,5 +272,6 @@ jmethodID InspectorClient::sendMethod = nullptr;
 jmethodID InspectorClient::sendToDevToolsConsoleMethod = nullptr;
 jmethodID InspectorClient::getInspectorMessageMethod = nullptr;
 int InspectorClient::contextGroupId = 1;
+
 
 

@@ -19,6 +19,7 @@
 #include "src/inspector/v8-runtime-agent-impl.h"
 #include "src/inspector/v8-schema-agent-impl.h"
 #include "src/inspector/v8-page-agent-impl.h"
+#include "src/inspector/v8-overlay-agent-impl.h"
 
 namespace v8_inspector {
 
@@ -35,7 +36,9 @@ namespace v8_inspector {
              stringViewStartsWith(method,
                                   protocol::Console::Metainfo::commandPrefix) ||
              stringViewStartsWith(method,
-                                  protocol::Schema::Metainfo::commandPrefix);
+                                  protocol::Schema::Metainfo::commandPrefix) ||
+             stringViewStartsWith(method,
+                                   protocol::Overlay::Metainfo::commandPrefix);
     }
 
 // static
@@ -67,6 +70,7 @@ namespace v8_inspector {
               m_heapProfilerAgent(nullptr),
               m_profilerAgent(nullptr),
               m_consoleAgent(nullptr),
+              m_overlayAgent(nullptr),
               m_schemaAgent(nullptr) {
       if (savedState.length()) {
         std::unique_ptr<protocol::Value> state =
@@ -106,6 +110,10 @@ namespace v8_inspector {
                 this, this, agentState(protocol::Page::Metainfo::domainName)));
         protocol::Page::Dispatcher::wire(&m_dispatcher, m_pageAgent.get());
 
+        m_overlayAgent.reset(new V8OverlayAgentImpl(
+                this, this, agentState(protocol::Overlay::Metainfo::domainName)));
+        protocol::Overlay::Dispatcher::wire(&m_dispatcher, m_overlayAgent.get());
+
       if (savedState.length()) {
         m_runtimeAgent->restore();
         m_debuggerAgent->restore();
@@ -122,6 +130,7 @@ namespace v8_inspector {
       m_heapProfilerAgent->disable();
       m_debuggerAgent->disable();
       m_runtimeAgent->disable();
+        m_overlayAgent->disable();
       m_inspector->disconnect(this);
     }
 
@@ -356,6 +365,10 @@ namespace v8_inspector {
                                .setName(protocol::Schema::Metainfo::domainName)
                                .setVersion(protocol::Schema::Metainfo::version)
                                .build());
+        result.push_back(protocol::Schema::Domain::create()
+                                 .setName(protocol::Overlay::Metainfo::domainName)
+                                 .setVersion(protocol::Overlay::Metainfo::version)
+                                 .build());
       return result;
     }
 

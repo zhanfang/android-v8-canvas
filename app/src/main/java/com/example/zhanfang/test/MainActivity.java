@@ -37,8 +37,6 @@ public class MainActivity extends AppCompatActivity {
         aE.extractAssets(app, "app", outputDir, extractPolicy, removePreviouslyInstalledAssets);
         extractPolicy.setAssetsThumb(app);
 
-        V8.require("/data/data/com.example.zhanfang.test/files/app/test.js");
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -62,16 +60,20 @@ public class MainActivity extends AppCompatActivity {
                                     app.getPackageName(),
                                     handler);
                     v8Inspector.start();
+
                     v8Inspector.waitForDebugger(false);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }).start();
 
+        V8.require("/data/data/com.example.zhanfang.test/files/app/test.js");
+
         // Example of a call to a native method
-        TextView tv = (TextView) findViewById(R.id.sample_text);
-        tv.setText(V8.stringFromJNI() + V8.stringFromJNI2());
+//        TextView tv = (TextView) findViewById(R.id.sample_text);
+//        tv.setText(V8.stringFromJNI() + V8.stringFromJNI2());
     }
 
     @Override

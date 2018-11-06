@@ -15,6 +15,8 @@ public class V8 {
 
     public static native void connect(Object connection);
 
+    public static native void waitForFrontend();
+
     public static native void scheduleBreak();
 
     public static native void disconnect();

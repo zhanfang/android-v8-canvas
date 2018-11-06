@@ -41,6 +41,8 @@ public:
     void quitMessageLoopOnPause() override;
     v8::Local<v8::Context> ensureDefaultContextInGroup(int contextGroupId) override;
 
+    void waitForFrontend();
+
     static void attachInspectorCallbacks(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate>& globalObjectTemplate);
     static void InspectorIsConnectedGetterCallback(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
     static bool inspectorIsConnected() {
@@ -54,6 +56,8 @@ public:
 private:
     InspectorClient(v8::Isolate* isolate);
 
+    void runMessageLoop();
+
     static InspectorClient* instance;
     static jclass inspectorClass;
     static jmethodID sendMethod;
@@ -66,6 +70,8 @@ private:
     jobject connection;
     bool running_nested_loop_;
     bool terminated_;
+    bool waiting_for_frontend_;
+    bool waiting_for_resume_;
 };
 
 
