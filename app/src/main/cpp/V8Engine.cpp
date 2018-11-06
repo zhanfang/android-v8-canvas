@@ -71,7 +71,7 @@ extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
     v8::Local<v8::Script> script;
     v8::ScriptOrigin origin(ArgConverter::ConvertToV8String(isolate, originName));
 
-//    InspectorClient::GetInstance()->scheduleBreak();
+    InspectorClient::GetInstance()->scheduleBreak();
 
     auto maybeScript = v8::Script::Compile(context, source, &origin).ToLocal(&script);
 

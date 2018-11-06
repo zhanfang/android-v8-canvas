@@ -46,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
+                V8.require("/data/data/com.example.zhanfang.test/files/app/test.js");
             }
         });
 
@@ -68,8 +70,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).start();
-
-        V8.require("/data/data/com.example.zhanfang.test/files/app/test.js");
 
         // Example of a call to a native method
 //        TextView tv = (TextView) findViewById(R.id.sample_text);
