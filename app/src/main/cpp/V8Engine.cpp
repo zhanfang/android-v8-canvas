@@ -5,6 +5,7 @@
 #include "V8Engine.h"
 #include "ArgConverter.h"
 #include "InspectorClient.h"
+#include "log/os-android.h"
 
 using namespace tns;
 using namespace std;
