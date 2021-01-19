@@ -89,6 +89,7 @@ public class V8Inspector {
 
         @Override
         protected void onOpen() {
+            Log.d("java", "v8 inspector opened");
             V8.connect(V8InspectorWebSocket.this);
         }
 
@@ -175,7 +176,7 @@ public class V8Inspector {
                     ".com/serve_rev/@793eb32f50bafcb87fb5d1a0fd3f44e66470e580/inspector" +
                     ".html?ws=localhost:4000\",\n" +
                     "   \"id\": \"0\",\n" + "   \"title\": \"V8测试一下\",\n" + "   \"type\": \"page\",\n" +
-                    "   \"url\": \"https://www.baidu.com/\",\n" +
+                    "   \"url\": \"https://www.test.com/\",\n" +
                     "   \"webSocketDebuggerUrl\": \"ws://localhost:4000\"\n" + "} ]";
 
 
@@ -193,7 +194,7 @@ public class V8Inspector {
 
     public void start() throws IOException {
         if (this.server == null) {
-            Log.i("debug", this.packageName + "_devtools_remote");
+            Log.i("V8", "Starting inspector to" + this.packageName + "_devtools_remote");
             this.server = new V8InspectorServer(this.packageName + "_devtools_remote");
             this.server.start(-1);
 

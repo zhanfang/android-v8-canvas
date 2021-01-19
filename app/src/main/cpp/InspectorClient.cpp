@@ -4,7 +4,7 @@
 #include "ArgConverter.h"
 #include "InspectorClient.h"
 #include "JniLocalRef.h"
-//#include "v8_inspector/src/inspector/v8-log-agent-impl.h"
+#include "log/os-android.h"
 #include "V8Engine.h"
 
 using namespace std;
@@ -34,6 +34,7 @@ InspectorClient::InspectorClient(v8::Isolate* isolate)
 
     getInspectorMessageMethod = env.GetStaticMethodID(inspectorClass, "getInspectorMessage", "(Ljava/lang/Object;)Ljava/lang/String;");
     assert(getInspectorMessageMethod != nullptr);
+
 }
 
 void InspectorClient::connect(jobject connection) {
@@ -50,6 +51,7 @@ void InspectorClient::scheduleBreak() {
 }
 
 void InspectorClient::createInspectorSession(v8::Isolate* isolate, const v8::Local<v8::Context>& context) {
+    LOGD("createInspectorSession");
     session_ = inspector_->connect(InspectorClient::contextGroupId, this, v8_inspector::StringView());
 }
 
@@ -182,6 +184,7 @@ void InspectorClient::init() {
     if (inspector_ != nullptr) {
         return;
     }
+    LOGD("inspectorClient init");
 
     v8::Isolate::Scope isolate_scope(isolate_);
     v8::HandleScope handle_scope(isolate_);
@@ -199,6 +202,7 @@ void InspectorClient::init() {
 
 InspectorClient* InspectorClient::GetInstance() {
     if (instance == nullptr) {
+        LOGD("new InspectorClient");
         instance = new InspectorClient(mIsolate);
     }
 

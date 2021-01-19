@@ -119,9 +119,6 @@ extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
     return;
 }
 
-extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_init(JNIEnv *env, jobject object) {
-    InspectorClient::GetInstance()->init();
-}
 
 extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_connect(JNIEnv *env, jobject instance, jobject connection) {
     InspectorClient::GetInstance()->connect(connection);
@@ -141,6 +138,9 @@ extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_disconnect(JNIEnv *e
 
 extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_dispatchMessage(JNIEnv *env, jobject instance, jstring jMessage) {
     std::string message = ArgConverter::jstringToString(jMessage);
+
+    LOGD("%s", message.c_str());
+
     InspectorClient::GetInstance()->dispatchMessage(message);
 }
 

@@ -3,6 +3,7 @@ package com.example.zhanfang.test;
 import android.app.Application;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.TextView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -44,9 +45,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-
+                Log.d("zhanfang", "require test.js");
                 V8.require("/data/data/com.example.zhanfang.test/files/app/test.js");
             }
         });
@@ -56,11 +55,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    V8Inspector v8Inspector =
-                            new V8Inspector(
-                                    app.getFilesDir().getAbsolutePath(),
-                                    app.getPackageName(),
-                                    handler);
+                    V8Inspector v8Inspector = new V8Inspector(
+                            app.getFilesDir().getAbsolutePath(),
+                            app.getPackageName(),
+                            handler);
                     v8Inspector.start();
 
                     v8Inspector.waitForDebugger(false);
