@@ -7,7 +7,6 @@ include_directories(
     src/main/cpp/v8_inspector
 )
 
-
 set(
     INSPECTOR_SOURCES
 

@@ -5,7 +5,6 @@
 #include "V8Engine.h"
 #include "ArgConverter.h"
 #include "InspectorClient.h"
-#include "log/os-android.h"
 
 using namespace tns;
 using namespace std;
@@ -13,7 +12,6 @@ using namespace std;
 v8::Platform* platform_;
 v8::Isolate *mIsolate;
 v8::Persistent<v8::Context> mPersistentContext;
-
 
 void LogCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (args.Length() < 1) {
@@ -94,6 +92,7 @@ extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
 
     auto source = ArgConverter::ConvertToV8String(mIsolate, src);
 
+
     auto originName = "file:/" + filename;
 
     LOGD("v8 require %s", originName.c_str());
@@ -113,6 +112,7 @@ extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
 
         v8::String::Utf8Value utf8(result);
         LOGD("require done %s", *utf8);
+
     }
 
     return;
