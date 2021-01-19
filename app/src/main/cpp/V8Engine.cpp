@@ -5,6 +5,7 @@
 #include "V8Engine.h"
 #include "ArgConverter.h"
 #include "InspectorClient.h"
+#include "log/os-android.h"
 
 using namespace tns;
 using namespace std;
@@ -13,10 +14,38 @@ v8::Platform* platform_;
 v8::Isolate *mIsolate;
 v8::Persistent<v8::Context> mPersistentContext;
 
+
+void LogCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    if (args.Length() < 1) {
+        return;
+    }
+
+    v8::HandleScope scope(args.GetIsolate());
+
+    std::stringstream str;
+
+    int l = args.Length();
+    for (int i = 0; i < l; i++) {
+        v8::String::Utf8Value utf8(args[i]);
+        str << " " << *utf8;
+    }
+
+    LOGD("%s", str.str().c_str());
+}
+
+void createGlobalObject(v8::Local<v8::ObjectTemplate>& globalObjTpl) {
+    // Add methods to console function
+    v8::Local<v8::ObjectTemplate> con = v8::ObjectTemplate::New(mIsolate);
+    con->Set(v8::String::NewFromUtf8(mIsolate, "log"), v8::FunctionTemplate::New(mIsolate, LogCallback));
+    globalObjTpl->Set(v8::String::NewFromUtf8(mIsolate, "console"), con);
+
+}
+
 extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
         JNIEnv *env,
         jobject /* this */) {
     // Initialize V8.
+    LOGD("init v8");
     v8::V8::InitializeICU();
     platform_ = v8::platform::CreateDefaultPlatform();
     v8::V8::InitializePlatform(platform_);
@@ -31,7 +60,6 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
     // Create a stack-allocated handle scope.
     v8::HandleScope handle_scope(mIsolate);
 
-
     const auto readOnlyFlags = static_cast<v8::PropertyAttribute>(v8::PropertyAttribute::DontDelete | v8::PropertyAttribute::ReadOnly);
 
     auto globalFunctionTemplate = v8::FunctionTemplate::New(mIsolate);
@@ -39,6 +67,8 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
     auto globalTemplate = v8::ObjectTemplate::New(mIsolate, globalFunctionTemplate);
     globalTemplate->Set(ArgConverter::ConvertToV8String(mIsolate, "testReadOnly"),
                         ArgConverter::ConvertToV8String(mIsolate, "0"), readOnlyFlags);
+
+    createGlobalObject(globalTemplate);
 
     v8::Local <v8::Context> context = v8::Context::New(mIsolate, nullptr, globalTemplate);
     context->Enter();
@@ -64,7 +94,9 @@ extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
 
     auto source = ArgConverter::ConvertToV8String(mIsolate, src);
 
-    auto originName = "file://" + filename;
+    auto originName = "file:/" + filename;
+
+    LOGD("v8 require %s", originName.c_str());
 
     v8::TryCatch tc(isolate);
 
@@ -78,6 +110,9 @@ extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
     if (!script.IsEmpty()) {
         v8::Local<v8::Value> result;
         auto maybeResult = script->Run(context).ToLocal(&result);
+
+        v8::String::Utf8Value utf8(result);
+        LOGD("require done %s", *utf8);
     }
 
     return;
