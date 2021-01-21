@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-# Command info: https://cmake.org/cmake/help/v3.4/command/include_directories.html
-include_directories(
-    src/main/cpp
-    src/main/cpp/include
-    src/main/cpp/v8_inspector
-)
+
+#--------------------------------------------------
+# 设置参数
+#--------------------------------------------------
+set(SKIA_SO_FILE    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/skia/libs/${ANDROID_ABI}/libskia.so)
 
 set(
     INSPECTOR_SOURCES
@@ -58,8 +57,62 @@ set(
     src/main/cpp/v8_inspector/src/inspector/wasm-translation.cc
 )
 
+#--------------------------------------------------
+# Includes
+#--------------------------------------------------
+include_directories(
+    # skia
+    third_party/skia
+    third_party/skia/include
+    third_party/skia/include/android
+    third_party/skia/include/atlastext
+    third_party/skia/include/c
+    third_party/skia/include/codec
+    third_party/skia/include/config
+    third_party/skia/include/core
+    third_party/skia/include/effects
+    third_party/skia/include/pathops
+    third_party/skia/include/ports
+    third_party/skia/include/encode
+    third_party/skia/include/gpu
+    third_party/skia/include/private
+    third_party/skia/include/svg
+    third_party/skia/include/ports
+    third_party/skia/include/third_party
+    third_party/skia/include/utils
+
+    # v8
+    third_party/v8
+    third_party/v8/include
+
+    src/main/cpp
+    src/main/cpp/v8_inspector
+)
+
+
+#--------------------------------------------------
+# Source Skia
+#--------------------------------------------------
 add_library(
-    # Sets the name of the library. When it's built you can find it with lib prefix libNativeScript.so
+    # Sets the name of the library.
+    skia.engine
+    # Sets the library as a shared library.
+    SHARED
+    IMPORTED
+)
+
+set_target_properties(
+    skia.engine
+    PROPERTIES
+    IMPORTED_LOCATION
+    ${SKIA_SO_FILE}
+)
+
+#--------------------------------------------------
+# Source V8
+#--------------------------------------------------
+add_library(
+    # Sets the name of the library.
     v8.engine
 
     # Sets the library as a shared library.
@@ -67,52 +120,58 @@ add_library(
 
     # Runtime source
     src/main/cpp/Util.cpp
-    src/main/cpp/ArgConverter.cpp
     src/main/cpp/AssetExtractor.cpp
+    src/main/cpp/ArgConverter.cpp
     src/main/cpp/File.cpp
     src/main/cpp/JEnv.cpp
     src/main/cpp/JType.cpp
     src/main/cpp/com_inspector_runtime.cpp
     src/main/cpp/com_inspector_AssetExtractor.cpp
 
+    # canvas
+    src/main/cpp/canvas/canvas.cpp
+
     # V8 inspector source files will be included
     ${INSPECTOR_SOURCES}
 
     src/main/cpp/V8Engine.cpp
-
 )
 
-set_target_properties( v8.engine PROPERTIES LINK_FLAGS -Wl,--allow-multiple-definition )
-
-target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libzip.a )
-target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_base.a )
-target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_init.a )
-target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_initializers.a )
-target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_libplatform.a )
-target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_libsampler.a )
-target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_libbase.a )
-target_link_libraries( v8.engine ${PROJECT_SOURCE_DIR}/src/main/libs/${ANDROID_ABI}/libv8_snapshot.a )
-
+#--------------------------------------------------
+# other dependencies
+#--------------------------------------------------
 find_library( system-log log )
-find_library( system-android android )
 find_library( system-dl dl )
-find_library( system-atomic atomic ) # TODO: plamen5kov: can't be found in ndk for some reasong ... look at it later (maybe deprecated in newer NDK versions)
 find_library( system-z z )
 find_library( log-lib log )
-
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
-
-target_link_libraries(v8.engine ${system-log} ${system-android} ${system-dl} ${system-z} ${log-lib} )
+find_library( opensl OpenSLES )
 
 
-## skia
-#file(WRITE "/Users/zhanfang/Documents/code/chrome/skia/out/config/empty.cpp")
-#execute_process(COMMAND
-#  ninja -C "/Users/zhanfang/Documents/code/chrome/skia/out/config/" build.ninja
-#  RESULT_VARIABLE ninja_result)
-#if (ninja_result)
-#  message(WARNING "Regeneration failed running ninja: ${ninja_result}")
-#endif()
-#include("/Users/zhanfang/Documents/code/chrome/skia/out/config/CMakeLists.ext")
+#--------------------------------------------------
+# link
+#--------------------------------------------------
+
+target_link_libraries(
+    v8.engine
+
+    # 顺序不能变化
+    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libzip.a
+    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_base.a
+    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_init.a
+    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_initializers.a
+    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_libplatform.a
+    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_libsampler.a
+    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_libbase.a
+    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_snapshot.a
+
+    ${system-log}
+    ${system-dl}
+    ${system-z}
+
+    skia.engine
+    -ljnigraphics
+    -landroid
+    ${opensl}
+
+    ${log-lib}
+)

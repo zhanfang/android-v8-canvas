@@ -2,6 +2,7 @@ package com.example.zhanfang.test;
 
 public class V8 {
     static {
+//        System.loadLibrary("skia");
         System.loadLibrary("v8.engine");
     }
 
@@ -24,5 +25,7 @@ public class V8 {
     public static native void dispatchMessage(String message);
 
     public static native void require(String filePath);
+
+    public static native void skiaDemo();
 
 }

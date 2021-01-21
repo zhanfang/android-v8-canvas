@@ -4,9 +4,7 @@ import android.app.Application;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.TextView;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -32,8 +30,6 @@ public class MainActivity extends AppCompatActivity {
         AssetExtractor aE = new AssetExtractor(null);
         String outputDir = app.getFilesDir().getPath() + File.separator;
 
-        // will force deletion of previously extracted files in app/files directories
-        // see https://github.com/NativeScript/NativeScript/issues/4137 for reference
         boolean removePreviouslyInstalledAssets = true;
         aE.extractAssets(app, "app", outputDir, extractPolicy, removePreviouslyInstalledAssets);
         extractPolicy.setAssetsThumb(app);
@@ -45,8 +41,11 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("zhanfang", "require test.js");
+                Log.d("v8", "require test.js");
                 V8.require("/data/data/com.example.zhanfang.test/files/app/test.js");
+
+                Canvas.demo();
+                V8.skiaDemo();
             }
         });
 
@@ -69,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
 
-        // Example of a call to a native method
+//        Example of a call to a native method
 //        TextView tv = (TextView) findViewById(R.id.sample_text);
 //        tv.setText(V8.stringFromJNI() + V8.stringFromJNI2());
     }

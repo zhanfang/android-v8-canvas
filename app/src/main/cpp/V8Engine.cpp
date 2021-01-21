@@ -201,3 +201,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_zhanfang_test_V8_stringFro
 
     return env->NewStringUTF(hello.c_str());
 }
+
+extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_skiaDemo(JNIEnv *env, jobject instance) {
+    LOGD("skia demo");
+}
