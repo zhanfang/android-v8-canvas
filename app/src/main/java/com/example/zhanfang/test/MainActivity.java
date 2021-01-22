@@ -4,9 +4,10 @@ import android.app.Application;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,8 +45,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("v8", "require test.js");
                 V8.require("/data/data/com.example.zhanfang.test/files/app/test.js");
 
-                Canvas.demo();
-                V8.skiaDemo();
+//                Canvas.render();
             }
         });
 

@@ -1,8 +1,11 @@
 # android-v8-demo
 
-一个将v8嵌入android的demo。
+一个将 v8 嵌入 android 的 demo，并且集成了 skia 能力。
 
 ## 环境配置
+- Android Stadio 4.1.2 版本
+- gradle 6.5 版本
+- CMake 3.10.x
 - Android SDK 28，完成相关配置（local.properties）
 - NDK 版本选择 r21 及以下版本，完成相关配置 (local.properties)
 

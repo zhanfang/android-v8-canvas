@@ -26,6 +26,4 @@ public class V8 {
 
     public static native void require(String filePath);
 
-    public static native void skiaDemo();
-
 }
