@@ -1,5 +1,4 @@
 # android-v8-demo
-
 一个将 v8 嵌入 android 的 demo，并且集成了 skia 能力。
 
 ## 环境配置
@@ -8,6 +7,10 @@
 - CMake 3.10.x
 - Android SDK 28，完成相关配置（local.properties）
 - NDK 版本选择 r21 及以下版本，完成相关配置 (local.properties)
+
+## 动态库编译
+- 需要编译 skia 的 so 文件
+- 需要编译 v8 的 so 文件
 
 ## 开启 v8 inspector
 此项目在 v8 初始化阶段已默认开启 inspector，但是需要把 unix domain socket 端口映射到本地端口才可进行调试，需要进行以下步骤
