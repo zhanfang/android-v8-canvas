@@ -129,7 +129,8 @@ add_library(
     src/main/cpp/JType.cpp
     src/main/cpp/com_inspector_runtime.cpp
     src/main/cpp/com_inspector_AssetExtractor.cpp
-    src/main/cpp/V8Console.cpp
+        src/main/cpp/console/Console.cpp
+    src/main/cpp/V8GlobalHelpers.cpp
 
     # canvas
     src/main/cpp/canvas/CanvasEngine.cpp

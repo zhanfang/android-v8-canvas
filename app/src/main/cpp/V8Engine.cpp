@@ -7,7 +7,7 @@
 #include "ArgConverter.h"
 #include "InspectorClient.h"
 #include "log/os-android.h"
-#include "V8Console.h"
+#include "console/Console.h"
 #include "canvas/CanvasContext2d.h"
 
 using namespace tns;

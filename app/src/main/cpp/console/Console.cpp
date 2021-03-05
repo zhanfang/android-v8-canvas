@@ -3,7 +3,7 @@
 //
 #include <sstream>
 #include <assert.h>
-#include "V8Console.h"
+#include "Console.h"
 #include "ArgConverter.h"
 #include "log/os-android.h"
 #include "V8GlobalHelpers.h"
