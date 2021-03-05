@@ -6,10 +6,6 @@ public class V8 {
         System.loadLibrary("v8.engine");
     }
 
-    public static native String stringFromJNI();
-
-    public static native String stringFromJNI2();
-
     public static native void initV8();
 
     public static native void init();

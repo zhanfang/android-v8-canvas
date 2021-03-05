@@ -87,6 +87,8 @@ include_directories(
 
     src/main/cpp
     src/main/cpp/v8_inspector
+    src/main/cpp/canvas
+    src/main/cpp/nan
 )
 
 
@@ -127,9 +129,12 @@ add_library(
     src/main/cpp/JType.cpp
     src/main/cpp/com_inspector_runtime.cpp
     src/main/cpp/com_inspector_AssetExtractor.cpp
+    src/main/cpp/V8Console.cpp
 
     # canvas
-    src/main/cpp/canvas/canvas.cpp
+    src/main/cpp/canvas/CanvasEngine.cpp
+    src/main/cpp/canvas/Canvas.cpp
+    src/main/cpp/canvas/CanvasContext2d.cpp
 
     # V8 inspector source files will be included
     ${INSPECTOR_SOURCES}

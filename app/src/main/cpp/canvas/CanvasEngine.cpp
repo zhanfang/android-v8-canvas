@@ -13,7 +13,6 @@
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 
-
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_zhanfang_test_Canvas_render(JNIEnv* env, jclass obj, jobject jSurface, jint width, jint height) {
     LOGD("canvas render start");
