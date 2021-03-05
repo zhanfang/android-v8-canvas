@@ -6,6 +6,7 @@
 #include "V8Console.h"
 #include "ArgConverter.h"
 #include "log/os-android.h"
+#include "V8GlobalHelpers.h"
 
 using namespace tns;
 
@@ -50,6 +51,23 @@ void Console::sendToADBLogcat(const std::string& message, android_LogPriority lo
     }
 }
 
+const v8::Local<v8::String> transformJSObject(v8::Isolate* isolate, v8::Local<v8::Object> object) {
+    auto context = isolate->GetCurrentContext();
+    auto objToString = object->ToString(context).ToLocalChecked();
+    v8::Local<v8::String> resultString;
+
+    bool hasCustomToStringImplementation = ArgConverter::ConvertToString(objToString).find("[object Object]") == std::string::npos;
+
+    if (hasCustomToStringImplementation) {
+        resultString = objToString;
+    } else {
+        v8::HandleScope scope(isolate);
+        resultString = JsonStringifyObject(isolate, object);
+    }
+
+    return resultString;
+}
+
 const v8::Local<v8::String> buildStringFromArg(v8::Isolate* isolate, const v8::Local<v8::Value>& val) {
     v8::Local<v8::String> argString;
     if (val->IsFunction()) {
@@ -89,7 +107,7 @@ const v8::Local<v8::String> buildStringFromArg(v8::Isolate* isolate, const v8::L
         v8::Local<v8::Object> obj = val.As<v8::Object>();
 
         // Todo: json 类型待实现
-//        argString = transformJSObject(isolate, obj);
+        argString = transformJSObject(isolate, obj);
     } else {
         val->ToDetailString(isolate->GetCurrentContext()).ToLocal(&argString);
     }
