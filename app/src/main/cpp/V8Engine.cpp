@@ -5,7 +5,7 @@
 #include "File.h"
 #include "V8Engine.h"
 #include "ArgConverter.h"
-#include "InspectorClient.h"
+#include "inspector/InspectorClient.h"
 #include "log/os-android.h"
 #include "console/Console.h"
 #include "canvas/CanvasContext2d.h"
@@ -43,17 +43,21 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
     globalFunctionTemplate->SetClassName(Nan::New("WindowObject").ToLocalChecked());
     auto globalTemplate = v8::ObjectTemplate::New(mIsolate, globalFunctionTemplate);
 
+
     v8::Local <v8::Context> context = v8::Context::New(mIsolate, nullptr, globalTemplate);
     context->Enter();
     auto global = context->Global();
-    global->DefineOwnProperty(context, ArgConverter::ConvertToV8String(mIsolate, "global"), global, readOnlyFlags);
-    global->DefineOwnProperty(context, ArgConverter::ConvertToV8String(mIsolate, "__global"), global, readOnlyFlags);
+    global->DefineOwnProperty(context, Nan::New("global").ToLocalChecked(), global, readOnlyFlags);
+    global->DefineOwnProperty(context, Nan::New("__global").ToLocalChecked(), global, readOnlyFlags);
 
     // console
     v8::Local<v8::Object> console = Console::createConsole(context, nullptr, 1024);
     global->DefineOwnProperty(context, Nan::New("console").ToLocalChecked(), console, readOnlyFlags);
 
-    Context2d::Initialize(globalTemplate);
+    // canvas
+    v8::Local<v8::Object> bindings = v8::Object::New(mIsolate);
+    Context2d::Initialize(bindings);
+    global->DefineOwnProperty(context, Nan::New("bindings").ToLocalChecked(), bindings);
 
     // attach the context to the persistent context, to avoid V8 GC-ing it
     mPersistentContext.Reset(mIsolate, context);

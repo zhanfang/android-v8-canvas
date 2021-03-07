@@ -11,8 +11,11 @@ var c = {
     }
 };
 
-console.log(a + b);
-
 console.log(c);
 
-CanvasRenderingContext2D(123);
+
+var Context2D = bindings.Context2D;
+var ctx = new Context2D('2d');
+
+ctx.fillStyle = 'green';
+ctx.fillRect(10, 10, 150, 100);

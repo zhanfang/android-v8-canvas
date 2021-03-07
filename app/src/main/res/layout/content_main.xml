@@ -9,7 +9,6 @@
     <com.example.zhanfang.test.SkiaCanvasView
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="332dp" />
+        tools:ignore="MissingConstraints" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

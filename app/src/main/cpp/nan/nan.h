@@ -10,6 +10,8 @@
 #include <v8.h>
 #include "nan_callbacks.h"
 
+using namespace v8;
+
 namespace Nan {
     typedef const v8::FunctionCallbackInfo<v8::Value>& NAN_METHOD_ARGS_TYPE;
     typedef void NAN_METHOD_RETURN_TYPE;
@@ -69,14 +71,6 @@ namespace Nan {
         static inline return_t New(ExternalOneByteStringResource * value);
     };
 
-    template <>
-    struct Factory<v8::FunctionTemplate> : FactoryBase<v8::FunctionTemplate> {
-        static inline
-        return_t
-        New( FunctionCallback callback = NULL
-                , v8::Local<v8::Value> data = v8::Local<v8::Value>()
-                , v8::Local<v8::Signature> signature = v8::Local<v8::Signature>());
-    };
 
     //=== Array ====================================================================
     Factory<v8::Array>::return_t
@@ -179,6 +173,36 @@ namespace Nan {
     New(const char * value, int length) {
         return New<v8::String>(value, length);
     }
+
+# define X(NAME)                                                               \
+    inline v8::Local<v8::Value> NAME(const char *msg) {                        \
+      EscapableHandleScope scope(v8::Isolate::GetCurrent());                                              \
+      return scope.Escape(v8::Exception::NAME(New(msg).ToLocalChecked()));     \
+    }                                                                          \
+                                                                               \
+    inline                                                                     \
+    v8::Local<v8::Value> NAME(v8::Local<v8::String> msg) {                     \
+      return v8::Exception::NAME(msg);                                         \
+    }                                                                          \
+                                                                               \
+    inline void Throw ## NAME(const char *msg) {                               \
+      HandleScope scope(v8::Isolate::GetCurrent());                                                       \
+      v8::Isolate::GetCurrent()->ThrowException(                               \
+          v8::Exception::NAME(New(msg).ToLocalChecked()));                     \
+    }                                                                          \
+                                                                               \
+    inline void Throw ## NAME(v8::Local<v8::String> msg) {                     \
+      HandleScope scope(v8::Isolate::GetCurrent());                                                       \
+      v8::Isolate::GetCurrent()->ThrowException(                               \
+          v8::Exception::NAME(msg));                                           \
+    }
+
+    X(Error)
+    X(RangeError)
+    X(ReferenceError)
+    X(SyntaxError)
+    X(TypeError)
+# undef X
 }
 
 #endif  // NAN_H_

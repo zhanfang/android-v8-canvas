@@ -6,7 +6,6 @@
 #include "CanvasContext2d.h"
 #include "log/os-android.h"
 
-
 using namespace v8;
 
 /*
@@ -54,7 +53,7 @@ Context2d::~Context2d() {
 
 }
 
-void Context2d::Initialize(v8::Local<v8::ObjectTemplate> target) {
+void Context2d::Initialize(v8::Local<v8::Object> bindings) {
     v8::Isolate *isolate = v8::Isolate::GetCurrent();
     HandleScope scope(isolate);
 
@@ -67,12 +66,17 @@ void Context2d::Initialize(v8::Local<v8::ObjectTemplate> target) {
     proto->Set(Nan::New("fillRect").ToLocalChecked(), FunctionTemplate::New(Isolate::GetCurrent(), FillRect));
     proto->SetAccessor(Nan::New("fillStyle").ToLocalChecked(), GetFillStyle, SetFillStyle);
 
-    Local<Context> ctx = isolate->GetCurrentContext();
-    target->Set(Nan::New("CanvasRenderingContext2D").ToLocalChecked(), ctor);
+    bindings->Set(Nan::New("Context2D").ToLocalChecked(), ctor->GetFunction());
 }
 
 NAN_METHOD(Context2d::New) {
-//    v8::String info[0]
+    if (!info.IsConstructCall()) {
+        return Nan::ThrowTypeError("Class constructors cannot be invoked without 'new'");
+    }
+
+    if (!info[0]->IsString())
+        return Nan::ThrowTypeError("args should be string");
+
 }
 
 NAN_METHOD(Context2d::FillRect) {
@@ -84,9 +88,13 @@ NAN_METHOD(Context2d::FillRect) {
 }
 
 NAN_GETTER(Context2d::GetFillStyle) {
-
+    LOGD("343333");
 }
 
 NAN_SETTER(Context2d::SetFillStyle) {
+    if (value->IsString()) {
+        LOGD("1234");
+    } else if (value->IsObject()) {
 
+    }
 }
