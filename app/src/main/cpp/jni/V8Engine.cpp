@@ -25,6 +25,11 @@ SkCanvas *skCanvas;
 
 ANativeWindow *nativeWindow;
 
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
+    JEnv::Init(vm);
+    return JNI_VERSION_1_6;
+}
+
 extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
         JNIEnv *env,
         jobject /* this */) {
