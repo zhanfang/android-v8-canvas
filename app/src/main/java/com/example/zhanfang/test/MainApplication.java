@@ -15,6 +15,7 @@ public class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        V8.initV8();
     }
 
     public static MainApplication getInstance() {

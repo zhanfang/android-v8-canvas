@@ -10,6 +10,10 @@
 #include "console/Console.h"
 #include "canvas/CanvasContext2d.h"
 
+#include <android/bitmap.h>
+#include <android/native_window_jni.h>
+#include <include/core/SkBitmap.h>
+
 using namespace tns;
 using namespace std;
 
@@ -17,6 +21,9 @@ v8::Platform* platform_;
 v8::Isolate *mIsolate;
 v8::Persistent<v8::Context> mPersistentContext;
 
+SkCanvas *skCanvas;
+
+ANativeWindow *nativeWindow;
 
 extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
         JNIEnv *env,
@@ -65,45 +72,52 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
     InspectorClient::GetInstance()->init();
 }
 
-extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
-        JNIEnv *env, jobject obj, jstring filePath) {
+void require(string src, string filename) {
     auto isolate = mIsolate;
     v8::Isolate::Scope isolate_scope(isolate);
     v8::HandleScope handle_scope(isolate);
-
     v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate, mPersistentContext);
-    auto filename = ArgConverter::jstringToString(filePath);
-    auto src = File::ReadText(filename);
 
-    auto source = ArgConverter::ConvertToV8String(mIsolate, src);
-
-
+    auto source = Nan::New(src).ToLocalChecked();
     auto originName = "file:/" + filename;
 
-    LOGD("v8 require %s", originName.c_str());
+    LOGD("require %s", originName.c_str());
 
     v8::TryCatch tc(isolate);
 
     v8::Local<v8::Script> script;
-    v8::ScriptOrigin origin(ArgConverter::ConvertToV8String(isolate, originName));
+    v8::ScriptOrigin origin(Nan::New(originName).ToLocalChecked());
 
     InspectorClient::GetInstance()->scheduleBreak();
 
-    auto maybeScript = v8::Script::Compile(context, source, &origin).ToLocal(&script);
+    v8::Script::Compile(context, source, &origin).ToLocal(&script);
 
     if (!script.IsEmpty()) {
         v8::Local<v8::Value> result;
-        auto maybeResult = script->Run(context).ToLocal(&result);
-
-        v8::String::Utf8Value utf8(result);
-        LOGD("require done %s", *utf8);
-
+        script->Run(context).ToLocal(&result);
     }
-
-    return;
 }
 
+extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
+        JNIEnv *env, jobject obj, jstring filePath) {
+    string filename = ArgConverter::jstringToString(filePath);
+    string src = File::ReadText(filename);
 
+    ANativeWindow_Buffer *buffer = new ANativeWindow_Buffer();
+    ANativeWindow_lock(nativeWindow, buffer, 0);
+    int bpr = buffer->stride * 4;
+    SkBitmap bitmap;
+    SkImageInfo imageInfo = SkImageInfo::MakeN32(buffer->width, buffer->height, SkAlphaType::kPremul_SkAlphaType);
+
+    bitmap.setInfo(imageInfo, bpr);
+    bitmap.setPixels(buffer->bits);
+
+    skCanvas = new SkCanvas(bitmap);
+    require(src, filename);
+    ANativeWindow_unlockAndPost(nativeWindow);
+}
+
+// inspector
 extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_connect(JNIEnv *env, jobject instance, jobject connection) {
     InspectorClient::GetInstance()->connect(connection);
 }
@@ -126,4 +140,16 @@ extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_dispatchMessage(JNIE
     LOGD("%s", message.c_str());
 
     InspectorClient::GetInstance()->dispatchMessage(message);
+}
+
+// canvas
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_zhanfang_test_V8_onSurfaceCreate(JNIEnv *env, jclass clazz, jobject jSurface,
+                                                  jint width, jint height) {
+    // TODO: implement onSurfaceCreate()
+    // 获取与 Surface 对应的 ANativeWindow 对象
+    nativeWindow = ANativeWindow_fromSurface(env, jSurface);
+    // 设置 buffer 的尺寸和格式
+    ANativeWindow_setBuffersGeometry(nativeWindow, width, height, WINDOW_FORMAT_RGBA_8888);
 }

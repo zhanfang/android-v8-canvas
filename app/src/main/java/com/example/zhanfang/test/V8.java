@@ -1,14 +1,15 @@
 package com.example.zhanfang.test;
 
+import android.view.Surface;
+
 public class V8 {
     static {
-//        System.loadLibrary("skia");
         System.loadLibrary("v8.engine");
     }
 
     public static native void initV8();
 
-    public static native void init();
+    public static native void onSurfaceCreate(Surface jSurface, int width, int height);
 
     public static native void connect(Object connection);
 

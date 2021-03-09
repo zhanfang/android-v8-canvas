@@ -12,7 +12,7 @@
 #include "src/inspector/v8-inspector-session-impl.h"
 #include "src/inspector/protocol/Forward.h"
 #include "src/inspector/string-16.h"
-#include "V8Engine.h"
+#include "jni/V8Engine.h"
 
 using namespace v8_inspector;
 

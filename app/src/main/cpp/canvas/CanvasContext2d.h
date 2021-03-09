@@ -9,7 +9,7 @@
 
 class Context2d {
     public:
-        Context2d(SkCanvas *canvas);
+        Context2d();
 
         static void Initialize(v8::Local<v8::Object> bindings);
         static NAN_METHOD(New);
@@ -17,11 +17,7 @@ class Context2d {
         static NAN_GETTER(GetFillStyle);
         static NAN_SETTER(SetFillStyle);
 
-
     private:
         ~Context2d();
-        SkCanvas *_canvas;
-
-        static SkCanvas *skCanvas;
 };
 

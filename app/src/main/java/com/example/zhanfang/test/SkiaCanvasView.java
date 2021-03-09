@@ -1,18 +1,8 @@
 package com.example.zhanfang.test;
 
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
-import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -47,7 +37,7 @@ public class SkiaCanvasView extends SurfaceView implements SurfaceHolder.Callbac
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d("skia", "surfaceCreated");
-        Canvas.init(mHolder.getSurface(), getWidth(), getHeight());
+        V8.onSurfaceCreate(mHolder.getSurface(), getWidth(), getHeight());
         mIsDrawing = true;
         new Thread(this).start();
     }

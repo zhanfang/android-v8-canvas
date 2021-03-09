@@ -203,6 +203,7 @@ namespace Nan {
     X(SyntaxError)
     X(TypeError)
 # undef X
+
 }
 
 #endif  // NAN_H_

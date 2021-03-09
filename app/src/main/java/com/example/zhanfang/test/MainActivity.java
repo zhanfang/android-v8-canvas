@@ -13,6 +13,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,8 +24,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        V8.initV8();
 
         // 移动前端源文件
         final Application app = MainApplication.getInstance();
@@ -37,14 +36,15 @@ public class MainActivity extends AppCompatActivity {
         aE.extractAssets(app, "app", outputDir, extractPolicy, removePreviouslyInstalledAssets);
         extractPolicy.setAssetsThumb(app);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        Button button = (Button) findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("v8", "require test.js");
                 V8.require("/data/data/com.example.zhanfang.test/files/app/test.js");
             }
         });
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
         final Handler handler = new Handler();
         new Thread(new Runnable() {
@@ -64,10 +64,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).start();
-
-//        Example of a call to a native method
-//        TextView tv = (TextView) findViewById(R.id.sample_text);
-//        tv.setText(V8.stringFromJNI() + V8.stringFromJNI2());
     }
 
     @Override

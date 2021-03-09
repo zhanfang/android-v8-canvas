@@ -5,6 +5,7 @@
 
 #include "CanvasContext2d.h"
 #include "log/os-android.h"
+#include "jni/V8Engine.h"
 
 using namespace v8;
 
@@ -45,8 +46,7 @@ inline static bool checkArgs(const v8::FunctionCallbackInfo<Value> &info, double
     return areArgsValid;
 }
 
-Context2d::Context2d(SkCanvas *canvas) {
-    _canvas = canvas;
+Context2d::Context2d() {
 }
 
 Context2d::~Context2d() {
@@ -83,8 +83,11 @@ NAN_METHOD(Context2d::FillRect) {
     RECT_ARGS;
     if (0 == width || 0 == height) return;
     SkRect r = SkRect::MakeXYWH(x, y, width, height);
-//    SkCanvas *canvas = info.This();
-//    _canvas->drawRect(r, m_fillPaint );
+    SkPaint paint;
+    paint.setColor(SK_ColorWHITE);
+
+    if(skCanvas == nullptr) { return;}
+    skCanvas->drawRect(r, paint);
 }
 
 NAN_GETTER(Context2d::GetFillStyle) {
@@ -93,7 +96,7 @@ NAN_GETTER(Context2d::GetFillStyle) {
 
 NAN_SETTER(Context2d::SetFillStyle) {
     if (value->IsString()) {
-        LOGD("1234");
+
     } else if (value->IsObject()) {
 
     }

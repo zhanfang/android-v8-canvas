@@ -133,14 +133,13 @@ add_library(
     src/main/cpp/V8GlobalHelpers.cpp
 
     # canvas
-    src/main/cpp/canvas/CanvasEngine.cpp
-    src/main/cpp/canvas/Canvas.cpp
+        src/main/cpp/canvas/Canvas.cpp
     src/main/cpp/canvas/CanvasContext2d.cpp
 
     # V8 inspector source files will be included
     ${INSPECTOR_SOURCES}
 
-    src/main/cpp/V8Engine.cpp
+        src/main/cpp/jni/V8Engine.cpp
 )
 
 #--------------------------------------------------

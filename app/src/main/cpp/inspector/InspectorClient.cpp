@@ -5,7 +5,7 @@
 #include "InspectorClient.h"
 #include "JniLocalRef.h"
 #include "log/os-android.h"
-#include "V8Engine.h"
+#include "jni/V8Engine.h"
 
 using namespace std;
 using namespace tns;
@@ -203,7 +203,7 @@ void InspectorClient::init() {
 InspectorClient* InspectorClient::GetInstance() {
     if (instance == nullptr) {
         LOGD("new InspectorClient");
-        instance = new InspectorClient(mIsolate);
+        instance = new InspectorClient(Isolate::GetCurrent());
     }
 
     return instance;
