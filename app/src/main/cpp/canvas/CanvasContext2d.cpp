@@ -6,8 +6,11 @@
 #include "CanvasContext2d.h"
 #include "log/os-android.h"
 #include "jni/V8Engine.h"
+#include "GraphicsTypes.h"
+#include "ArgConverter.h"
 
 using namespace v8;
+using namespace tns;
 
 /*
  * Rectangle arg assertions.
@@ -46,7 +49,12 @@ inline static bool checkArgs(const v8::FunctionCallbackInfo<Value> &info, double
     return areArgsValid;
 }
 
-Context2d::Context2d() {
+Context2d::Context2d(SkCanvas* canvas) {
+    m_skCanvas = canvas;
+    // 设置样式
+    m_fillPaint.setStyle(SkPaint::kFill_Style);
+    // 设置抗齿距
+    m_fillPaint.setAntiAlias(true);
 }
 
 Context2d::~Context2d() {
@@ -77,17 +85,18 @@ NAN_METHOD(Context2d::New) {
     if (!info[0]->IsString())
         return Nan::ThrowTypeError("args should be string");
 
+    Context2d *context = new Context2d(skCanvas);
+    context->Wrap(info.This());
+    info.GetReturnValue().Set(info.This());
 }
 
 NAN_METHOD(Context2d::FillRect) {
     RECT_ARGS;
     if (0 == width || 0 == height) return;
+    Context2d *context = node::ObjectWrap::Unwrap<Context2d>(info.This());
     SkRect r = SkRect::MakeXYWH(x, y, width, height);
-    SkPaint paint;
-    paint.setColor(SK_ColorWHITE);
 
-    if(skCanvas == nullptr) { return;}
-    skCanvas->drawRect(r, paint);
+    context->m_skCanvas->drawRect(r, context->m_fillPaint);
 }
 
 NAN_GETTER(Context2d::GetFillStyle) {
@@ -95,9 +104,13 @@ NAN_GETTER(Context2d::GetFillStyle) {
 }
 
 NAN_SETTER(Context2d::SetFillStyle) {
+    Context2d *context = node::ObjectWrap::Unwrap<Context2d>(info.This());
     if (value->IsString()) {
-
+        Local<String> str = value->ToString();
+        SkColor color = Engine::to_color(ArgConverter::ConvertToString(str));
+        context->m_fillPaint.setColor(color);
     } else if (value->IsObject()) {
+
 
     }
 }
