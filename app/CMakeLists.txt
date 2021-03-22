@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
+ADD_DEFINITIONS(-D __ANDROID__)
+ADD_DEFINITIONS(-D SK_GL)
 
 #--------------------------------------------------
 # 设置参数
@@ -135,6 +137,7 @@ add_library(
         src/main/cpp/canvas/Canvas.cpp
         src/main/cpp/canvas/CanvasContext2d.cpp
         src/main/cpp/canvas/GraphicsTypes.cpp
+        src/main/cpp/canvas/GLWindowContext.cpp
 
 
     # V8 inspector source files will be included
@@ -152,7 +155,9 @@ find_library( system-log log )
 find_library( system-dl dl )
 find_library( system-z z )
 find_library( log-lib log )
-find_library( opensl OpenSLES )
+find_library( GLES2_LIB GLESv2 )
+find_library( GLES1_LIB GLESv1_CM )
+find_library( EGL_LIB EGL )
 
 
 #--------------------------------------------------
@@ -175,11 +180,11 @@ target_link_libraries(
     ${system-log}
     ${system-dl}
     ${system-z}
-
-    skia.engine
-    -ljnigraphics
-    -landroid
-    ${opensl}
-
-    ${log-lib}
+        skia.engine
+        -ljnigraphics
+        -landroid
+        ${log-lib}
+        ${GLES2_LIB}
+        ${GLES1_LIB}
+        ${EGL_LIB}
 )

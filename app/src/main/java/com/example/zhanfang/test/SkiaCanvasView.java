@@ -38,8 +38,6 @@ public class SkiaCanvasView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d("skia", "surfaceCreated");
         V8.onSurfaceCreate(mHolder.getSurface(), getWidth(), getHeight());
-        mIsDrawing = true;
-        new Thread(this).start();
     }
 
     @Override

@@ -1,5 +1,3 @@
-console.log(123, 234);
-
 var a = 1;
 var b = 3;
 
@@ -19,3 +17,8 @@ var ctx = new Context2D('2d');
 
 ctx.fillStyle = 'green';
 ctx.fillRect(10, 10, 150, 100);
+
+ctx.clearRect(10, 10, 100, 100);
+
+console.log(ctx.fillStyle);
+console.log(ctx.__proto__.constructor.name);

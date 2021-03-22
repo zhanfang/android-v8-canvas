@@ -13,15 +13,20 @@
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
 #include <include/core/SkBitmap.h>
+#include <include/core/SkTypeface.h>
+#include <include/core/SkFont.h>
 
 using namespace tns;
 using namespace std;
+using namespace Engine;
 
 v8::Platform* platform_;
 v8::Isolate *mIsolate;
 v8::Persistent<v8::Context> mPersistentContext;
 
 SkCanvas *skCanvas;
+
+Canvas *canvas;
 
 ANativeWindow *nativeWindow;
 
@@ -68,7 +73,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
 
     // canvas
     v8::Local<v8::Object> bindings = v8::Object::New(mIsolate);
-    Context2d::Initialize(bindings);
+    Engine::Context2d::Initialize(bindings);
     global->DefineOwnProperty(context, Nan::New("bindings").ToLocalChecked(), bindings);
 
     // attach the context to the persistent context, to avoid V8 GC-ing it
@@ -108,18 +113,8 @@ extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
     string filename = ArgConverter::jstringToString(filePath);
     string src = File::ReadText(filename);
 
-    ANativeWindow_Buffer *buffer = new ANativeWindow_Buffer();
-    ANativeWindow_lock(nativeWindow, buffer, 0);
-    int bpr = buffer->stride * 4;
-    SkBitmap bitmap;
-    SkImageInfo imageInfo = SkImageInfo::MakeN32(buffer->width, buffer->height, SkAlphaType::kPremul_SkAlphaType);
-
-    bitmap.setInfo(imageInfo, bpr);
-    bitmap.setPixels(buffer->bits);
-
-    skCanvas = new SkCanvas(bitmap);
     require(src, filename);
-    ANativeWindow_unlockAndPost(nativeWindow);
+    canvas->flush();
 }
 
 // inspector
@@ -155,6 +150,5 @@ Java_com_example_zhanfang_test_V8_onSurfaceCreate(JNIEnv *env, jclass clazz, job
     // TODO: implement onSurfaceCreate()
     // 获取与 Surface 对应的 ANativeWindow 对象
     nativeWindow = ANativeWindow_fromSurface(env, jSurface);
-    // 设置 buffer 的尺寸和格式
-    ANativeWindow_setBuffersGeometry(nativeWindow, width, height, WINDOW_FORMAT_RGBA_8888);
+    canvas = new Canvas(width, height, nativeWindow);
 }

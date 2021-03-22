@@ -11,6 +11,7 @@
 
 using namespace v8;
 using namespace tns;
+using namespace Engine;
 
 /*
  * Rectangle arg assertions.
@@ -55,6 +56,8 @@ Context2d::Context2d(SkCanvas* canvas) {
     m_fillPaint.setStyle(SkPaint::kFill_Style);
     // 设置抗齿距
     m_fillPaint.setAntiAlias(true);
+    m_strokePaint.setStyle(SkPaint::kStroke_Style);
+    m_strokePaint.setAntiAlias(true);
 }
 
 Context2d::~Context2d() {
@@ -72,6 +75,8 @@ void Context2d::Initialize(v8::Local<v8::Object> bindings) {
     // Prototype
     Local<ObjectTemplate> proto = ctor->PrototypeTemplate();
     proto->Set(Nan::New("fillRect").ToLocalChecked(), FunctionTemplate::New(Isolate::GetCurrent(), FillRect));
+    proto->Set(Nan::New("strokeRect").ToLocalChecked(), FunctionTemplate::New(Isolate::GetCurrent(), StrokeRect));
+    proto->Set(Nan::New("clearRect").ToLocalChecked(), FunctionTemplate::New(Isolate::GetCurrent(), ClearRect));
     proto->SetAccessor(Nan::New("fillStyle").ToLocalChecked(), GetFillStyle, SetFillStyle);
 
     bindings->Set(Nan::New("Context2D").ToLocalChecked(), ctor->GetFunction());
@@ -85,6 +90,8 @@ NAN_METHOD(Context2d::New) {
     if (!info[0]->IsString())
         return Nan::ThrowTypeError("args should be string");
 
+    SkCanvas* skCanvas = canvas->sk_canvas();
+
     Context2d *context = new Context2d(skCanvas);
     context->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
@@ -97,10 +104,33 @@ NAN_METHOD(Context2d::FillRect) {
     SkRect r = SkRect::MakeXYWH(x, y, width, height);
 
     context->m_skCanvas->drawRect(r, context->m_fillPaint);
+    context->m_skCanvas->flush();
+}
+
+NAN_METHOD(Context2d::StrokeRect) {
+    RECT_ARGS;
+    if (0 == width || 0 == height) return;
+    Context2d *context = node::ObjectWrap::Unwrap<Context2d>(info.This());
+    SkRect r = SkRect::MakeXYWH(x, y, width, height);
+
+    context->m_skCanvas->drawRect(r, context->m_strokePaint);
+}
+
+NAN_METHOD(Context2d::ClearRect) {
+    RECT_ARGS;
+    if (0 == width || 0 == height) return;
+    SkRect r = SkRect::MakeXYWH(x, y, width, height);
+
+    Context2d *context = node::ObjectWrap::Unwrap<Context2d>(info.This());
+    SkPaint paint(context->m_fillPaint);
+    paint.setBlendMode(SkBlendMode::kClear);
+    context->m_skCanvas->drawRect(r, paint);
 }
 
 NAN_GETTER(Context2d::GetFillStyle) {
-    LOGD("343333");
+    Context2d *context = node::ObjectWrap::Unwrap<Context2d>(info.This());
+
+    info.GetReturnValue().Set(context->m_style);
 }
 
 NAN_SETTER(Context2d::SetFillStyle) {
@@ -113,4 +143,6 @@ NAN_SETTER(Context2d::SetFillStyle) {
 
 
     }
+
+    context->m_style = value;
 }
