@@ -24,4 +24,14 @@
 
     <include layout="@layout/content_main" />
 
+    <Button
+        android:id="@+id/flutter_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:text="jump to flutter"
+        android:translationY="600px"
+        android:onClick="btnClick"
+        />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

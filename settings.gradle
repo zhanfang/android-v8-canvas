@@ -1,1 +1,8 @@
 include ':app'
+
+setBinding(new Binding([gradle: this]))
+evaluate(new File(
+        settingsDir.parentFile,
+        'android-v8-canvas/flutter_module/.android/include_flutter.groovy'
+))
+include ':flutter_module'

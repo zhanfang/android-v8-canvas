@@ -1,6 +1,7 @@
 package com.example.zhanfang.test;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -17,6 +18,8 @@ import android.widget.Button;
 
 import java.io.File;
 import java.io.IOException;
+
+import io.flutter.embedding.android.FlutterActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         aE.extractAssets(app, "app", outputDir, extractPolicy, removePreviouslyInstalledAssets);
         extractPolicy.setAssetsThumb(app);
 
+        // 测试 v8 功能
         Button button = (Button) findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
+        // v8 inspector 相关
         final Handler handler = new Handler();
         new Thread(new Runnable() {
             @Override
@@ -86,5 +91,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void btnClick(View v) {
+        startActivity(
+                FlutterActivity.createDefaultIntent(this)
+        );
     }
 }

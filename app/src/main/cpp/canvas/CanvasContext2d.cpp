@@ -125,6 +125,7 @@ NAN_METHOD(Context2d::ClearRect) {
     SkPaint paint(context->m_fillPaint);
     paint.setBlendMode(SkBlendMode::kClear);
     context->m_skCanvas->drawRect(r, paint);
+    context->m_skCanvas->flush();
 }
 
 NAN_GETTER(Context2d::GetFillStyle) {
