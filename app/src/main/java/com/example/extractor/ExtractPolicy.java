@@ -1,4 +1,4 @@
-package com.example.zhanfang.test;
+package com.example.extractor;
 
 public interface ExtractPolicy {
     boolean shouldExtract(android.content.Context context);

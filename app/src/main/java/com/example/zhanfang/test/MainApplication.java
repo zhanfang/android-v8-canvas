@@ -3,6 +3,8 @@ package com.example.zhanfang.test;
 import android.app.Application;
 import android.content.Context;
 
+import com.example.extractor.AssetExtractor;
+import com.example.extractor.DefaultExtractPolicy;
 import com.example.v8engine.V8Engine;
 import com.example.v8engine.V8EngineCache;
 

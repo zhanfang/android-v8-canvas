@@ -1,11 +1,9 @@
-package com.example.zhanfang.test;
+package com.example.v8engine;
 
 import android.util.Log;
 import android.util.Pair;
 import android.webkit.MimeTypeMap;
 import android.os.Handler;
-
-import com.example.v8engine.V8;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,7 +36,7 @@ public class V8Inspector {
     private LinkedBlockingQueue<String> inspectorMessages = new LinkedBlockingQueue<String>();
     private LinkedBlockingQueue<String> pendingInspectorMessages = new LinkedBlockingQueue<String>();
 
-    V8Inspector(String filesDir, String packageName, Handler handler) {
+    public V8Inspector(String filesDir, String packageName, Handler handler) {
         ApplicationDir = filesDir;
         this.packageName = packageName;
         this.debugLocker = new Object();

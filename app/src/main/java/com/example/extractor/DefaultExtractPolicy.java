@@ -1,4 +1,4 @@
-package com.example.zhanfang.test;
+package com.example.extractor;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import com.example.v8engine.V8;
 import com.example.v8engine.V8Engine;
 import com.example.v8engine.V8EngineCache;
+import com.example.v8engine.V8Inspector;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -16,7 +16,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.io.File;
 import java.io.IOException;
 
 
