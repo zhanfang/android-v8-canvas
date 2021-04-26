@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import com.example.v8engine.V8;
+import com.example.v8engine.V8Engine;
+import com.example.v8engine.V8EngineCache;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,56 +19,48 @@ import android.widget.Button;
 import java.io.File;
 import java.io.IOException;
 
-import io.flutter.embedding.android.FlutterActivity;
 
 public class MainActivity extends AppCompatActivity {
+    private V8Engine v8Engine;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 移动前端源文件
-        final Application app = MainApplication.getInstance();
+        v8Engine = V8EngineCache.getInstance().get("v8_engine");
 
-        DefaultExtractPolicy extractPolicy = new DefaultExtractPolicy();
-        AssetExtractor aE = new AssetExtractor(null);
-        String outputDir = app.getFilesDir().getPath() + File.separator;
-
-        boolean removePreviouslyInstalledAssets = true;
-        aE.extractAssets(app, "app", outputDir, extractPolicy, removePreviouslyInstalledAssets);
-        extractPolicy.setAssetsThumb(app);
+        v8Engine.startEngine();
 
         // 测试 v8 功能
         Button button = (Button) findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                V8.require("/data/data/com.example.zhanfang.test/files/app/test.js");
+                v8Engine.requireJSFile("/data/data/com.example.zhanfang.test/files/app/test.js");
             }
         });
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-
-        // v8 inspector 相关
-        final Handler handler = new Handler();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    V8Inspector v8Inspector = new V8Inspector(
-                            app.getFilesDir().getAbsolutePath(),
-                            app.getPackageName(),
-                            handler);
-                    v8Inspector.start();
-
-                    v8Inspector.waitForDebugger(false);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+//        final Application app = MainApplication.getInstance();
+//        // v8 inspector 相关
+//        final Handler handler = new Handler();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    V8Inspector v8Inspector = new V8Inspector(
+//                            app.getFilesDir().getAbsolutePath(),
+//                            app.getPackageName(),
+//                            handler);
+//                    v8Inspector.start();
+//
+//                    v8Inspector.waitForDebugger(false);
+//
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
     }
 
     @Override

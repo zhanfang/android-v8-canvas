@@ -3,9 +3,6 @@ package com.example.v8engine;
 import android.view.Surface;
 
 public class V8 {
-    static {
-        System.loadLibrary("v8.engine");
-    }
 
     public static native void initV8();
 

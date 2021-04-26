@@ -3,7 +3,7 @@ package com.example.v8engine;
 /**
  * JS 运行时抽象
  */
-public interface JSRuntime {
+public interface IJSRuntime {
 
     /**
      * 在JS线程执行，若当前线程为非JS线程则执行postOnJSThread

@@ -7,6 +7,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.example.v8engine.V8;
+import com.example.v8engine.V8EngineCache;
 
 /**
  * TODO: document your custom view class.
@@ -39,7 +40,12 @@ public class SkiaCanvasView extends SurfaceView implements SurfaceHolder.Callbac
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d("skia", "surfaceCreated");
-        V8.onSurfaceCreate(mHolder.getSurface(), getWidth(), getHeight());
+        V8EngineCache.getInstance().get("v8_engine").runOnJSThread(new Runnable() {
+            @Override
+            public void run() {
+                V8.onSurfaceCreate(mHolder.getSurface(), getWidth(), getHeight());
+            }
+        });
     }
 
     @Override

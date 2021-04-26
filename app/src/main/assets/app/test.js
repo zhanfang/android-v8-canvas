@@ -20,5 +20,4 @@ ctx.fillRect(10, 10, 150, 100);
 
 ctx.clearRect(10, 10, 100, 100);
 
-console.log(ctx.fillStyle);
 console.log(ctx.__proto__.constructor.name);

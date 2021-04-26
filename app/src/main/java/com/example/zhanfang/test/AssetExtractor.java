@@ -9,8 +9,7 @@ import android.util.Log;
 public class AssetExtractor {
     private native void extractAssets(String apkPath, String input, String outputDir, boolean checkForNewerFiles);
 
-    public AssetExtractor(File libPath) {
-    }
+    public AssetExtractor(File libPath) {}
 
     public void extractAssets(Context context, String inputPath, String outputPath, ExtractPolicy extractPolicy, boolean shouldCleanUpPreviousAssets) {
         FileExtractor extractor = extractPolicy.extractor();

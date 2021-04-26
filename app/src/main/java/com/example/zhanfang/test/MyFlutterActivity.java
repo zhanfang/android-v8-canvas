@@ -11,6 +11,7 @@ import io.flutter.Log;
 import io.flutter.embedding.android.ExclusiveAppComponent;
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.FlutterEngineCache;
 import io.flutter.embedding.engine.dart.DartExecutor;
 import io.flutter.plugin.platform.PlatformPlugin;
 
@@ -24,12 +25,12 @@ public class MyFlutterActivity extends AppCompatActivity implements ExclusiveApp
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        engine = new FlutterEngine(this);
+        engine = FlutterEngineCache.getInstance().get("flutter_engine");
 
-        // Start executing Dart code to pre-warm the FlutterEngine.
-        engine.getDartExecutor().executeDartEntrypoint(
-                DartExecutor.DartEntrypoint.createDefault()
-        );
+        if (engine == null) {
+            engine = new FlutterEngine(this);
+            engine.getDartExecutor().executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault());
+        }
 
         engine.getActivityControlSurface().attachToActivity((ExclusiveAppComponent<Activity>) this, this.getLifecycle());
 
@@ -80,6 +81,5 @@ public class MyFlutterActivity extends AppCompatActivity implements ExclusiveApp
 
         platformPlugin = null;
         flutterView = null;
-        engine = null;
     }
 }

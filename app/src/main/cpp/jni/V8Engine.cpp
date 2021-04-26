@@ -134,7 +134,7 @@ extern "C" JNIEXPORT void Java_com_example_v8engine_V8_disconnect(JNIEnv *env, j
     InspectorClient::GetInstance()->disconnect();
 }
 
-extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_dispatchMessage(JNIEnv *env, jobject instance, jstring jMessage) {
+extern "C" JNIEXPORT void Java_com_example_v8engine_V8_dispatchMessage(JNIEnv *env, jobject instance, jstring jMessage) {
     std::string message = ArgConverter::jstringToString(jMessage);
 
     LOGD("%s", message.c_str());
