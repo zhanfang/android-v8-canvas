@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.example.v8engine.V8;
+
 /**
  * TODO: document your custom view class.
  */

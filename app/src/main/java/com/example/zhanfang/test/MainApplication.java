@@ -3,6 +3,8 @@ package com.example.zhanfang.test;
 import android.app.Application;
 import android.content.Context;
 
+import com.example.v8engine.V8;
+
 public class MainApplication extends Application {
 
     private static MainApplication instance = null;

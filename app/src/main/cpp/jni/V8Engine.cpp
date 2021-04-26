@@ -35,7 +35,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     return JNI_VERSION_1_6;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_example_zhanfang_test_V8_initV8(
+extern "C" JNIEXPORT void JNICALL Java_com_example_v8engine_V8_initV8(
         JNIEnv *env,
         jobject /* this */) {
     // Initialize V8.
@@ -108,7 +108,7 @@ void require(string src, string filename) {
     }
 }
 
-extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
+extern "C" void JNIEXPORT Java_com_example_v8engine_V8_require(
         JNIEnv *env, jobject obj, jstring filePath) {
     string filename = ArgConverter::jstringToString(filePath);
     string src = File::ReadText(filename);
@@ -118,19 +118,19 @@ extern "C" void JNIEXPORT Java_com_example_zhanfang_test_V8_require(
 }
 
 // inspector
-extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_connect(JNIEnv *env, jobject instance, jobject connection) {
+extern "C" JNIEXPORT void Java_com_example_v8engine_V8_connect(JNIEnv *env, jobject instance, jobject connection) {
     InspectorClient::GetInstance()->connect(connection);
 }
 
-extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_waitForFrontend(JNIEnv *env, jobject instance, jobject connection) {
+extern "C" JNIEXPORT void Java_com_example_v8engine_V8_waitForFrontend(JNIEnv *env, jobject instance, jobject connection) {
     InspectorClient::GetInstance()->waitForFrontend();
 }
 
-extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_scheduleBreak(JNIEnv *env, jobject instance) {
+extern "C" JNIEXPORT void Java_com_example_v8engine_V8_scheduleBreak(JNIEnv *env, jobject instance) {
     InspectorClient::GetInstance()->scheduleBreak();
 }
 
-extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_disconnect(JNIEnv *env, jobject instance) {
+extern "C" JNIEXPORT void Java_com_example_v8engine_V8_disconnect(JNIEnv *env, jobject instance) {
     InspectorClient::GetInstance()->disconnect();
 }
 
@@ -145,7 +145,7 @@ extern "C" JNIEXPORT void Java_com_example_zhanfang_test_V8_dispatchMessage(JNIE
 // canvas
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_zhanfang_test_V8_onSurfaceCreate(JNIEnv *env, jclass clazz, jobject jSurface,
+Java_com_example_v8engine_V8_onSurfaceCreate(JNIEnv *env, jclass clazz, jobject jSurface,
                                                   jint width, jint height) {
     // TODO: implement onSurfaceCreate()
     // 获取与 Surface 对应的 ANativeWindow 对象

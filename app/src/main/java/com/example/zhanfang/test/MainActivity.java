@@ -1,16 +1,14 @@
 package com.example.zhanfang.test;
 
 import android.app.Application;
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 
+import com.example.v8engine.V8;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
-import android.view.Surface;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -94,8 +92,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void btnClick(View v) {
-        startActivity(
-                FlutterActivity.createDefaultIntent(this)
-        );
+        Intent intent = new Intent(this, MyFlutterActivity.class);
+        startActivity(intent);
     }
 }
