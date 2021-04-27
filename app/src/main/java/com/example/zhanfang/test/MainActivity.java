@@ -40,26 +40,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        final Application app = MainApplication.getInstance();
-//        // v8 inspector 相关
-//        final Handler handler = new Handler();
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    V8Inspector v8Inspector = new V8Inspector(
-//                            app.getFilesDir().getAbsolutePath(),
-//                            app.getPackageName(),
-//                            handler);
-//                    v8Inspector.start();
-//
-//                    v8Inspector.waitForDebugger(false);
-//
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }).start();
+        final Application app = MainApplication.getInstance();
+        // v8 inspector 相关
+        final Handler handler = new Handler();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    V8Inspector v8Inspector = new V8Inspector(
+                            app.getFilesDir().getAbsolutePath(),
+                            app.getPackageName(),
+                            handler);
+                    v8Inspector.start();
+
+                    v8Inspector.waitForDebugger(false);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     @Override

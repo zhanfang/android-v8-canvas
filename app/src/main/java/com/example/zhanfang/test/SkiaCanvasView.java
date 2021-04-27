@@ -12,7 +12,7 @@ import com.example.v8engine.V8EngineCache;
 /**
  * TODO: document your custom view class.
  */
-public class SkiaCanvasView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
+public class SkiaCanvasView extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private boolean mIsDrawing = false;
 
@@ -57,13 +57,6 @@ public class SkiaCanvasView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.d("skia", "surfaceDestroyed");
         mIsDrawing = false;
-    }
-
-    @Override
-    public void run() {
-//        while (mIsDrawing) {
-//            Canvas.render(mHolder.getSurface(), getWidth(), getHeight());
-//        }
     }
 
 }

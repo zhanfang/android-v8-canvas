@@ -122,28 +122,28 @@ add_library(
     # Sets the library as a shared library.
     SHARED
 
-    # Runtime source
-    src/main/cpp/Util.cpp
-    src/main/cpp/AssetExtractor.cpp
-    src/main/cpp/ArgConverter.cpp
-    src/main/cpp/File.cpp
-    src/main/cpp/JEnv.cpp
-    src/main/cpp/JType.cpp
+        # Runtime source
+        src/main/cpp/Util.cpp
+        src/main/cpp/AssetExtractor.cpp
+        src/main/cpp/ArgConverter.cpp
+        src/main/cpp/File.cpp
+        src/main/cpp/JEnv.cpp
+        src/main/cpp/JType.cpp
 
         src/main/cpp/console/Console.cpp
-    src/main/cpp/V8GlobalHelpers.cpp
+        src/main/cpp/V8GlobalHelpers.cpp
 
-    # canvas
+        # canvas
         src/main/cpp/canvas/Canvas.cpp
         src/main/cpp/canvas/CanvasContext2d.cpp
         src/main/cpp/canvas/GraphicsTypes.cpp
         src/main/cpp/canvas/GLWindowContext.cpp
 
 
-    # V8 inspector source files will be included
+        # V8 inspector source files will be included
         ${INSPECTOR_SOURCES}
 
-    #jni
+        #jni
         src/main/cpp/jni/V8Engine.cpp
         src/main/cpp/jni/AssetExtractor.cpp
 )
@@ -166,20 +166,19 @@ find_library( EGL_LIB EGL )
 
 target_link_libraries(
     v8.engine
+        # 顺序不能变化
+        ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libzip.a
+        ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_base.a
+        ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_init.a
+        ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_initializers.a
+        ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_libplatform.a
+        ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_libsampler.a
+        ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_libbase.a
+        ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_snapshot.a
 
-    # 顺序不能变化
-    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libzip.a
-    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_base.a
-    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_init.a
-    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_initializers.a
-    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_libplatform.a
-    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_libsampler.a
-    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_libbase.a
-    ${PROJECT_SOURCE_DIR}/third_party/v8/libs/${ANDROID_ABI}/libv8_snapshot.a
-
-    ${system-log}
-    ${system-dl}
-    ${system-z}
+        ${system-log}
+        ${system-dl}
+        ${system-z}
         skia.engine
         -ljnigraphics
         -landroid
@@ -188,3 +187,5 @@ target_link_libraries(
         ${GLES1_LIB}
         ${EGL_LIB}
 )
+
+add_library(ffi SHARED src/main/cpp/ffi/FlutterFFI.cpp)

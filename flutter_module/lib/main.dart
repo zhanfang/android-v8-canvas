@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:ffi';
+
+final DynamicLibrary nativeLib = DynamicLibrary.open("libffi.so");
+
+final int Function(int x, int y) nativeAdd = nativeLib
+    .lookup<NativeFunction<Int8 Function(Int8, Int8)>>("native_add")
+    .asFunction();
 
 void main() => runApp(MyApp());
 
@@ -52,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counter++;
+      _counter = nativeAdd(_counter, 2);
     });
   }
 
