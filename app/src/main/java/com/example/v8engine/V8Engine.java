@@ -9,18 +9,19 @@ public class V8Engine implements IJSRuntime {
 
     private String TAG = "JavaV8";
     private long v8ThreadId = 0;
+    private V8ThreadPolicy v8ThreadPolicy;
+    private long nativeV8Engine;
 
     public static void loadLib() {
         // 加载 so 库文件
         System.loadLibrary("v8.engine");
     }
 
-    private V8ThreadPolicy v8ThreadPolicy;
-
     /**
      * 构造函数
      */
     public V8Engine() {
+        nativeV8Engine = V8.NewV8Engine();
         v8ThreadPolicy = new V8ThreadPolicy(this);
     }
 
@@ -39,14 +40,14 @@ public class V8Engine implements IJSRuntime {
     public void startEngineInternal() {
         Log.d(TAG, "v8 thread start");
         v8ThreadId = Thread.currentThread().getId();
-        V8.initV8(v8ThreadId);
+        V8.initV8(nativeV8Engine, v8ThreadId);
     }
 
     public void requireJSFile(final String filePath) {
         runOnJSThread(new Runnable() {
             @Override
             public void run() {
-                V8.require(filePath);
+                V8.require(nativeV8Engine, filePath);
             }
         });
     }
@@ -92,7 +93,7 @@ public class V8Engine implements IJSRuntime {
      * @param resultCb
      */
     private void evalJavascriptImpl(final String js, final ValueCallback<String> resultCb) {
-        String res = V8.runScript(js);
+        String res = V8.runScript(nativeV8Engine, js);
         if (resultCb != null) {
             resultCb.onReceiveValue(res);
         }
