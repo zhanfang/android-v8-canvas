@@ -4,7 +4,7 @@ import android.view.Surface;
 
 public class V8 {
 
-    public static native void initV8();
+    public static native void initV8(long threadId);
 
     public static native void onSurfaceCreate(Surface jSurface, int width, int height);
 

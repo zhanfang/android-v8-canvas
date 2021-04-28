@@ -5,7 +5,7 @@
 #include "InspectorClient.h"
 #include "JniLocalRef.h"
 #include "log/os-android.h"
-#include "jni/V8Engine.h"
+#include <v8_inspector/src/v8.h>
 
 using namespace std;
 using namespace tns;
@@ -77,7 +77,7 @@ void InspectorClient::disconnect() {
 void InspectorClient::dispatchMessage(const std::string& message) {
     Isolate::Scope isolate_scope(isolate_);
     v8::HandleScope handleScope(isolate_);
-    v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate_, mPersistentContext);
+    v8::Local<v8::Context> context = isolate_->GetCurrentContext();
     v8::Context::Scope context_scope(context);
 
     this->doDispatchMessage(isolate_, message);
@@ -99,7 +99,7 @@ void InspectorClient::runMessageLoop() {
             this->doDispatchMessage(this->isolate_, inspectorMessage);
         }
 
-        while (v8::platform::PumpMessageLoop(platform_, isolate_)) {}
+        while (v8::platform::PumpMessageLoop(v8::internal::V8::GetCurrentPlatform(), isolate_)) {}
     }
     terminated_ = false;
     running_nested_loop_ = false;
@@ -188,14 +188,12 @@ void InspectorClient::init() {
 
     v8::Isolate::Scope isolate_scope(isolate_);
     v8::HandleScope handle_scope(isolate_);
-    v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate_, mPersistentContext);
+    v8::Local<v8::Context> context = isolate_->GetCurrentContext();
     v8::Context::Scope context_scope(context);
 
     inspector_ = V8Inspector::create(isolate_, this);
-
     inspector_->contextCreated(v8_inspector::V8ContextInfo(context, InspectorClient::contextGroupId, v8_inspector::StringView()));
 
-    mPersistentContext.Reset(isolate_, context);
 
     this->createInspectorSession(isolate_, context);
 }

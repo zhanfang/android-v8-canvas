@@ -21,13 +21,11 @@ public class MainApplication extends Application {
     public MainApplication() {
         super();
         instance = this;
+        V8Engine.loadLib();
     }
 
     public void onCreate() {
         super.onCreate();
-
-        // 加载 so 库文件
-        System.loadLibrary("v8.engine");
 
         createJSDir();
 

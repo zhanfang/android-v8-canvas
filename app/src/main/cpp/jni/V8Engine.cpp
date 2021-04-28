@@ -1,32 +1,26 @@
 #include <jni.h>
+#include <v8.h>
 #include <v8-inspector.h>
 #include <nan.h>
 
+#include "libplatform/libplatform.h"
 #include "File.h"
-#include "V8Engine.h"
 #include "ArgConverter.h"
 #include "inspector/InspectorClient.h"
 #include "log/os-android.h"
 #include "console/Console.h"
+#include "canvas/Canvas.h"
 #include "canvas/CanvasContext2d.h"
 
 #include <android/bitmap.h>
+#include <android/native_window.h>
 #include <android/native_window_jni.h>
-#include <include/core/SkBitmap.h>
-#include <include/core/SkTypeface.h>
-#include <include/core/SkFont.h>
 
 using namespace tns;
 using namespace std;
 using namespace Engine;
 
-v8::Platform* platform_;
 v8::Isolate *mIsolate;
-v8::Persistent<v8::Context> mPersistentContext;
-
-SkCanvas *skCanvas;
-
-Canvas *canvas;
 
 ANativeWindow *nativeWindow;
 
@@ -36,12 +30,11 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_example_v8engine_V8_initV8(
-        JNIEnv *env,
-        jobject /* this */) {
+        JNIEnv *env, jobject /* this */, jlong threadId) {
     // Initialize V8.
     LOGD("init v8");
     v8::V8::InitializeICU();
-    platform_ = v8::platform::CreateDefaultPlatform();
+    v8::Platform* platform_ = v8::platform::CreateDefaultPlatform();
     v8::V8::InitializePlatform(platform_);
     v8::V8::Initialize();
 
@@ -77,6 +70,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_v8engine_V8_initV8(
     global->DefineOwnProperty(context, Nan::New("bindings").ToLocalChecked(), bindings);
 
     // attach the context to the persistent context, to avoid V8 GC-ing it
+    v8::Persistent<v8::Context> mPersistentContext;
     mPersistentContext.Reset(mIsolate, context);
 
     InspectorClient::GetInstance()->init();
@@ -115,7 +109,7 @@ extern "C" void JNIEXPORT Java_com_example_v8engine_V8_require(
     string src = File::ReadText(filename);
 
     require(src, filename);
-    canvas->flush();
+//    Canvas::getCurrentCanvas()->flush();
 }
 
 extern "C" jstring JNIEXPORT Java_com_example_v8engine_V8_runScript(
@@ -175,5 +169,7 @@ Java_com_example_v8engine_V8_onSurfaceCreate(JNIEnv *env, jclass clazz, jobject 
     // TODO: implement onSurfaceCreate()
     // 获取与 Surface 对应的 ANativeWindow 对象
     nativeWindow = ANativeWindow_fromSurface(env, jSurface);
-    canvas = new Canvas(width, height, nativeWindow);
+    Canvas* canvas = new Canvas(width, height, nativeWindow);
+
+    Canvas::globalCanvas = canvas;
 }

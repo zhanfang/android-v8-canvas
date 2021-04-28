@@ -1,10 +1,19 @@
 package com.example.v8engine;
 
+import android.util.Log;
 import android.webkit.ValueCallback;
 
 import com.example.v8engine.thread.V8ThreadPolicy;
 
 public class V8Engine implements IJSRuntime {
+
+    private String TAG = "JavaV8";
+    private long v8ThreadId = 0;
+
+    public static void loadLib() {
+        // 加载 so 库文件
+        System.loadLibrary("v8.engine");
+    }
 
     private V8ThreadPolicy v8ThreadPolicy;
 
@@ -28,7 +37,9 @@ public class V8Engine implements IJSRuntime {
      * 启动引擎，执行 JS Bundle 文件
      */
     public void startEngineInternal() {
-        V8.initV8();
+        Log.d(TAG, "v8 thread start");
+        v8ThreadId = Thread.currentThread().getId();
+        V8.initV8(v8ThreadId);
     }
 
     public void requireJSFile(final String filePath) {
@@ -75,6 +86,11 @@ public class V8Engine implements IJSRuntime {
         });
     }
 
+    /**
+     * eval js 实现
+     * @param js
+     * @param resultCb
+     */
     private void evalJavascriptImpl(final String js, final ValueCallback<String> resultCb) {
         String res = V8.runScript(js);
         if (resultCb != null) {

@@ -5,7 +5,6 @@
 
 #include "CanvasContext2d.h"
 #include "log/os-android.h"
-#include "jni/V8Engine.h"
 #include "GraphicsTypes.h"
 #include "ArgConverter.h"
 
@@ -90,7 +89,7 @@ NAN_METHOD(Context2d::New) {
     if (!info[0]->IsString())
         return Nan::ThrowTypeError("args should be string");
 
-    SkCanvas* skCanvas = canvas->sk_canvas();
+    SkCanvas* skCanvas = Canvas::globalCanvas->sk_canvas();
 
     Context2d *context = new Context2d(skCanvas);
     context->Wrap(info.This());

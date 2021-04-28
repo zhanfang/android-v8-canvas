@@ -27,6 +27,8 @@ namespace Engine {
 
         void flush();
 
+        static Canvas* globalCanvas;
+
     private:
         ~Canvas();
         void init(ANativeWindow *window);

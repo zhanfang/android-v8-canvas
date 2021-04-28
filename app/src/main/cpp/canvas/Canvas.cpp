@@ -6,6 +6,8 @@
 
 using namespace Engine;
 
+Canvas* Canvas::globalCanvas;
+
 Canvas::Canvas(size_t width, size_t height, ANativeWindow *window)
     : mWidth(width), mHeight(height){
     init(window);

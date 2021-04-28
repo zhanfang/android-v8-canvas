@@ -129,9 +129,9 @@ add_library(
         src/main/cpp/File.cpp
         src/main/cpp/JEnv.cpp
         src/main/cpp/JType.cpp
-
         src/main/cpp/console/Console.cpp
         src/main/cpp/V8GlobalHelpers.cpp
+        src/main/cpp/V8EngineWrapper.cpp
 
         # canvas
         src/main/cpp/canvas/Canvas.cpp
