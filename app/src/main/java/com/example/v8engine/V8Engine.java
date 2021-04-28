@@ -1,5 +1,7 @@
 package com.example.v8engine;
 
+import android.webkit.ValueCallback;
+
 import com.example.v8engine.thread.V8ThreadPolicy;
 
 public class V8Engine implements IJSRuntime {
@@ -56,6 +58,27 @@ public class V8Engine implements IJSRuntime {
     public void postOnJSThread(Runnable runnable, long delayMillis) {
         if(v8ThreadPolicy != null) {
             v8ThreadPolicy.runDelegateRunnable(runnable, delayMillis);
+        }
+    }
+
+    /**
+     * 在 js 线程中执行 js，执行完毕调用回调
+     * @param js
+     * @param resultCb
+     */
+    public void evalJavascript(final String js, final ValueCallback<String> resultCb) {
+        runOnJSThread(new Runnable() {
+            @Override
+            public void run() {
+                evalJavascriptImpl(js, resultCb);
+            }
+        });
+    }
+
+    private void evalJavascriptImpl(final String js, final ValueCallback<String> resultCb) {
+        String res = V8.runScript(js);
+        if (resultCb != null) {
+            resultCb.onReceiveValue(res);
         }
     }
 }

@@ -86,7 +86,7 @@ void require(string src, string filename) {
     auto isolate = mIsolate;
     v8::Isolate::Scope isolate_scope(isolate);
     v8::HandleScope handle_scope(isolate);
-    v8::Local<v8::Context> context = v8::Local<v8::Context>::New(isolate, mPersistentContext);
+    v8::Local<v8::Context> context = mIsolate->GetCurrentContext();
 
     auto source = Nan::New(src).ToLocalChecked();
     auto originName = "file:/" + filename;
@@ -108,6 +108,7 @@ void require(string src, string filename) {
     }
 }
 
+
 extern "C" void JNIEXPORT Java_com_example_v8engine_V8_require(
         JNIEnv *env, jobject obj, jstring filePath) {
     string filename = ArgConverter::jstringToString(filePath);
@@ -115,6 +116,30 @@ extern "C" void JNIEXPORT Java_com_example_v8engine_V8_require(
 
     require(src, filename);
     canvas->flush();
+}
+
+extern "C" jstring JNIEXPORT Java_com_example_v8engine_V8_runScript(
+        JNIEnv *env, jobject obj, jstring sourceScript) {
+    v8::Isolate::Scope isolate_scope(mIsolate);
+    v8::HandleScope handle_scope(mIsolate);
+
+    v8::TryCatch tryCatch(mIsolate);
+
+    // Enter the context for compiling and running the hello world script.
+    v8::Local<v8::Context> context = mIsolate->GetCurrentContext();
+    v8::Context::Scope context_scope(context);
+
+    // Create a string containing the JavaScript source code.
+    v8::Local<v8::String> source = ArgConverter::jstringToV8String(mIsolate, sourceScript);
+
+    // Compile the source code.
+    v8::Local<v8::Script> script =
+            v8::Script::Compile(context, source).ToLocalChecked();
+
+    // Run the script to get the result.
+    v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
+
+    return ArgConverter::ConvertToJavaString(result);
 }
 
 // inspector

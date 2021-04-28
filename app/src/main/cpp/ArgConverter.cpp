@@ -26,10 +26,10 @@ std::string ArgConverter::jstringToString(jstring value) {
     return s;
 }
 
-Local<Value> ArgConverter::jstringToV8String(Isolate* isolate, jstring value) {
-    if (value == nullptr) {
-        return Null(isolate);
-    }
+Local<String> ArgConverter::jstringToV8String(Isolate* isolate, jstring value) {
+//    if (value == nullptr) {
+//        return Null(isolate);
+//    }
 
     JEnv env;
     auto chars = env.GetStringChars(value, NULL);

@@ -11,9 +11,11 @@ import com.example.v8engine.V8Inspector;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.ValueCallback;
 import android.widget.Button;
 
 import java.io.IOException;
@@ -21,6 +23,7 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
     private V8Engine v8Engine;
+    private String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +40,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 v8Engine.requireJSFile("/data/data/com.example.zhanfang.test/files/app/test.js");
+                v8Engine.evalJavascript("console.log('zhanfang')", new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String value) {
+                        Log.d(TAG, "success:" + value);
+                    }
+                });
             }
         });
 
