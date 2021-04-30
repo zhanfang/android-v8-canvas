@@ -11,7 +11,7 @@ set(SKIA_SO_FILE    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/skia/libs/${ANDROID_
 set(
     INSPECTOR_SOURCES
 
-        src/main/cpp/inspector/InspectorClient.cpp
+    src/main/cpp/inspector/InspectorClient.cpp
 
     src/main/cpp/v8_inspector/src/inspector/protocol/Console.cpp
     src/main/cpp/v8_inspector/src/inspector/protocol/Debugger.cpp
@@ -131,7 +131,7 @@ add_library(
         src/main/cpp/JType.cpp
         src/main/cpp/console/Console.cpp
         src/main/cpp/V8GlobalHelpers.cpp
-        src/main/cpp/V8EngineWrapper.cpp
+        src/main/cpp/V8Runtime.cpp
 
         # canvas
         src/main/cpp/canvas/Canvas.cpp
@@ -145,7 +145,9 @@ add_library(
 
         #jni
         src/main/cpp/jni/V8Engine.cpp
+        src/main/cpp/jni/V8Inspector.cpp
         src/main/cpp/jni/AssetExtractor.cpp
+        
 )
 
 #--------------------------------------------------

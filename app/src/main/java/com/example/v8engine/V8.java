@@ -14,6 +14,8 @@ public class V8 {
 
     public static native void onSurfaceCreate(Surface jSurface, int width, int height);
 
+    public static native void createInspector(long nativeV8Engine);
+
     public static native void connect(Object connection);
 
     public static native void waitForFrontend();

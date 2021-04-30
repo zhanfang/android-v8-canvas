@@ -2,7 +2,7 @@
 // Created by zhanfang on 2021/4/28.
 //
 
-#include "V8EngineWrapper.h"
+#include "V8Runtime.h"
 #include "log/os-android.h"
 #include "console/Console.h"
 #include "inspector/InspectorClient.h"
@@ -30,13 +30,13 @@ public:
     Persistent<External> obj;
 };
 
-V8EngineWrapper::V8EngineWrapper(JNIEnv *env, jobject obj) {
+V8Runtime::V8Runtime(JNIEnv *env, jobject obj) {
 
 }
 
-V8EngineWrapper::~V8EngineWrapper() {}
+V8Runtime::~V8Runtime() {}
 
-void V8EngineWrapper::initialize(jstring globalAlias, jlong threadId) {
+void V8Runtime::initialize(jstring globalAlias, jlong threadId) {
     // Initialize V8.
     LOGD("init v8");
     mThreadId = threadId;
@@ -74,11 +74,14 @@ void V8EngineWrapper::initialize(jstring globalAlias, jlong threadId) {
     v8::Local<v8::Object> bindings = v8::Object::New(mIsolate);
     Engine::Context2d::Initialize(bindings);
     obj->Set(context, Nan::New("bindings").ToLocalChecked(), bindings);
-
     InspectorClient::GetInstance()->init();
 }
 
-void V8EngineWrapper::require(std::string src, std::string filename) {
+void V8Runtime::createInspector() {
+    //
+}
+
+void V8Runtime::require(std::string src, std::string filename) {
     v8::Isolate::Scope isolate_scope(mIsolate);
     v8::HandleScope handle_scope(mIsolate);
     v8::Local<v8::Context> context = mIsolate->GetCurrentContext();
@@ -103,7 +106,7 @@ void V8EngineWrapper::require(std::string src, std::string filename) {
     }
 }
 
-jstring V8EngineWrapper::runScript(jstring sourceScript) {
+jstring V8Runtime::runScript(jstring sourceScript) {
     v8::Isolate::Scope isolate_scope(mIsolate);
     v8::HandleScope handle_scope(mIsolate);
 
@@ -125,7 +128,7 @@ jstring V8EngineWrapper::runScript(jstring sourceScript) {
     return tns::ArgConverter::ConvertToJavaString(result);
 }
 
-jlong V8EngineWrapper::registerJavaMethod(jlong objectHandle, jstring functionName, jboolean voidMethod) {
+jlong V8Runtime::registerJavaMethod(jlong objectHandle, jstring functionName, jboolean voidMethod) {
     SETUP(mIsolate);
     v8::Local<v8::Object> object = v8::Local<v8::Object>::New(mIsolate, *reinterpret_cast<v8::Persistent<v8::Object>*>(objectHandle));
     Local<v8::String> v8FunctionName = tns::ArgConverter::jstringToV8String(mIsolate, functionName);

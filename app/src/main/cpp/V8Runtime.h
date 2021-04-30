@@ -2,17 +2,17 @@
 // Created by zhanfang on 2021/4/28.
 //
 
-#ifndef ANDROID_V8_CANVAS_V8ENGINEWRAPPER_H
-#define ANDROID_V8_CANVAS_V8ENGINEWRAPPER_H
+#ifndef ANDROID_V8_CANVAS_V8Runtime_H
+#define ANDROID_V8_CANVAS_V8Runtime_H
 
 #include <jni.h>
 #include <string>
 #include <v8.h>
 
-class V8EngineWrapper {
+class V8Runtime {
 public:
-    V8EngineWrapper(JNIEnv* env, jobject obj);
-    virtual ~V8EngineWrapper();
+    V8Runtime(JNIEnv* env, jobject obj);
+    virtual ~V8Runtime();
 
     v8::Isolate* getIsolate() {return mIsolate;}
 
@@ -20,6 +20,9 @@ public:
     void require(std::string src, std::string filename);
     jstring runScript(jstring sourceScript);
     jlong registerJavaMethod(jlong objectHandle, jstring functionName, jboolean voidMethod);
+
+    // inspector
+    void createInspector();
 
 private:
     jlong mThreadId = 0;
@@ -30,4 +33,4 @@ private:
 };
 
 
-#endif //ANDROID_V8_CANVAS_V8ENGINEWRAPPER_H
+#endif //ANDROID_V8_CANVAS_V8Runtime_H

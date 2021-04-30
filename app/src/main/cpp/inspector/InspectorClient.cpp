@@ -208,35 +208,7 @@ InspectorClient* InspectorClient::GetInstance() {
 }
 
 void InspectorClient::sendToFrontEndCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
-//    if ((instance == nullptr) || (instance->connection == nullptr)) {
-//        return;
-//    }
-//
-//    try {
-//        if ((args.Length() > 0) && args[0]->IsString()) {
-//            std::string message = ArgConverter::ConvertToString(args[0]->ToString());
-//
-//            std::string level = "log";
-//            if (args.Length() > 1  && args[1]->IsString()) {
-//                level = ArgConverter::ConvertToString(args[1]->ToString());
-//            }
-//
-//            JEnv env;
-//            JniLocalRef str(env.NewStringUTF(message.c_str()));
-//            JniLocalRef lev(env.NewStringUTF(level.c_str()));
-//            env.CallStaticVoidMethod(inspectorClass, sendToDevToolsConsoleMethod, instance->connection, (jstring) str, (jstring)lev);
-//        }
-//    } catch (NativeScriptException& e) {
-//        e.ReThrowToV8();
-//    } catch (std::exception e) {
-//        stringstream ss;
-//        ss << "Error: c++ exception: " << e.what() << endl;
-//        NativeScriptException nsEx(ss.str());
-//        nsEx.ReThrowToV8();
-//    } catch (...) {
-//        NativeScriptException nsEx(std::string("Error: c++ exception!"));
-//        nsEx.ReThrowToV8();
-//    }
+
 }
 
 void InspectorClient::consoleLogCallback(const string& message, const string& logLevel) {
