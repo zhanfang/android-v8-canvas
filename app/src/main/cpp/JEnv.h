@@ -5,8 +5,7 @@
 #include <map>
 #include <string>
 
-namespace tns {
-    class JEnv {
+class JEnv {
     public:
         JEnv();
 
@@ -330,7 +329,6 @@ namespace tns {
         static jmethodID GET_CACHED_CLASS_METHOD_ID;
 
         static std::map<std::string, jclass> s_classCache;
-    };
-}
+};
 
 #endif /* JENV_H_ */

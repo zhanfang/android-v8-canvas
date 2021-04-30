@@ -10,7 +10,7 @@ public class V8 {
      */
     public static native long NewV8Engine();
 
-    public static native void initV8(long nativeV8Engine, long threadId);
+    public static native void initV8(long nativeV8Engine, String globalAlias, long threadId);
 
     public static native void onSurfaceCreate(Surface jSurface, int width, int height);
 
@@ -27,5 +27,7 @@ public class V8 {
     public static native void require(long nativeV8Engine, String filePath);
 
     public static native String runScript(long nativeV8Engine, String script);
+
+    public static native long registerJavaMethod(long nativeV8Engine, long objectHandle, final String functionName, final boolean voidMethod);
 
 }

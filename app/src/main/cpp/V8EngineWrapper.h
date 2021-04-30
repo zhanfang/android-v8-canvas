@@ -16,13 +16,17 @@ public:
 
     v8::Isolate* getIsolate() {return mIsolate;}
 
-    void initialize(jlong threadId);
+    void initialize(jstring globalAlias, jlong threadId);
     void require(std::string src, std::string filename);
     jstring runScript(jstring sourceScript);
+    jlong registerJavaMethod(jlong objectHandle, jstring functionName, jboolean voidMethod);
 
 private:
     jlong mThreadId = 0;
     v8::Isolate* mIsolate;
+    v8::Persistent<v8::Context> context_;
+    v8::Persistent<v8::Object>* globalObject_;
+
 };
 
 

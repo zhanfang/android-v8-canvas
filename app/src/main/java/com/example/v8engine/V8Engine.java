@@ -40,7 +40,7 @@ public class V8Engine implements IJSRuntime {
     public void startEngineInternal() {
         Log.d(TAG, "v8 thread start");
         v8ThreadId = Thread.currentThread().getId();
-        V8.initV8(nativeV8Engine, v8ThreadId);
+        V8.initV8(nativeV8Engine, null, v8ThreadId);
     }
 
     public void requireJSFile(final String filePath) {
@@ -97,5 +97,18 @@ public class V8Engine implements IJSRuntime {
         if (resultCb != null) {
             resultCb.onReceiveValue(res);
         }
+    }
+
+    /**
+     * Register a Java method as a JavaScript function. When the JS Function is invoked
+     * the Java method will be called.
+     *
+     * @param callback The JavaCallback to call when the JSFunction is invoked.
+     * @param jsFunctionName The name of the JSFunction.
+     *
+     */
+    public void registerJavaMethod(final JavaCallback callback, final String jsFunctionName) {
+//        v8.checkThread();
+//        V8.registerJavaMethod(nativeV8Engine, callback, getHandle(), jsFunctionName, false);
     }
 }

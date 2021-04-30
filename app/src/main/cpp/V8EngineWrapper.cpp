@@ -5,12 +5,30 @@
 #include "V8EngineWrapper.h"
 #include "log/os-android.h"
 #include "console/Console.h"
-#include "libplatform/libplatform.h"
 #include "inspector/InspectorClient.h"
 #include "canvas/CanvasContext2d.h"
 #include "ArgConverter.h"
-
 #include <nan.h>
+
+using namespace v8;
+
+#define SETUP(isolate)\
+    Isolate::Scope isolateScope(isolate);\
+    HandleScope handle_scope(isolate);\
+    Local<Context> context = isolate->GetCurrentContext();\
+    Context::Scope context_scope(context);
+
+
+static void jsWindowObjectAccessor(Local<String> property, const v8::PropertyCallbackInfo<Value>& info) {
+  info.GetReturnValue().Set(info.GetIsolate()->GetCurrentContext()->Global());
+}
+
+class MethodDescriptor {
+public:
+    jlong methodID;
+    jlong v8EnginePtr;
+    Persistent<External> obj;
+};
 
 V8EngineWrapper::V8EngineWrapper(JNIEnv *env, jobject obj) {
 
@@ -18,15 +36,10 @@ V8EngineWrapper::V8EngineWrapper(JNIEnv *env, jobject obj) {
 
 V8EngineWrapper::~V8EngineWrapper() {}
 
-void V8EngineWrapper::initialize(jlong threadId) {
+void V8EngineWrapper::initialize(jstring globalAlias, jlong threadId) {
     // Initialize V8.
     LOGD("init v8");
     mThreadId = threadId;
-
-    v8::V8::InitializeICU();
-    v8::Platform* platform_ = v8::platform::CreateDefaultPlatform();
-    v8::V8::InitializePlatform(platform_);
-    v8::V8::Initialize();
 
     // Create a new Isolate and make it the current one.
     v8::Isolate::CreateParams create_params;
@@ -37,31 +50,30 @@ void V8EngineWrapper::initialize(jlong threadId) {
     // Create a stack-allocated handle scope.
     v8::HandleScope handle_scope(mIsolate);
 
-    const auto readOnlyFlags = static_cast<v8::PropertyAttribute>(v8::PropertyAttribute::DontDelete | v8::PropertyAttribute::ReadOnly);
+    Local<ObjectTemplate> globalObject = ObjectTemplate::New(mIsolate);
+    if (globalAlias != nullptr) {
+        Local<String> alias = tns::ArgConverter::jstringToV8String(mIsolate, globalAlias);
+        globalObject->SetAccessor(alias, jsWindowObjectAccessor);
+    }
 
-    auto globalFunctionTemplate = v8::FunctionTemplate::New(mIsolate);
-    globalFunctionTemplate->SetClassName(Nan::New("WindowObject").ToLocalChecked());
-    auto globalTemplate = v8::ObjectTemplate::New(mIsolate, globalFunctionTemplate);
+    Local<Context> context = Context::New(mIsolate, nullptr, globalObject);
+    // attach the context to the persistent context, to avoid V8 GC-ing it
+    context_.Reset(mIsolate, context);
+    globalObject_ = new Persistent<Object>;
+    globalObject_->Reset(mIsolate, context->Global()->GetPrototype()->ToObject(context).ToLocalChecked());
 
-
-    v8::Local <v8::Context> context = v8::Context::New(mIsolate, nullptr, globalTemplate);
     context->Enter();
-    auto global = context->Global();
-    global->DefineOwnProperty(context, Nan::New("global").ToLocalChecked(), global, readOnlyFlags);
-    global->DefineOwnProperty(context, Nan::New("__global").ToLocalChecked(), global, readOnlyFlags);
+
+    Local<Object> obj = Local<Object>::New(mIsolate, *globalObject_);
 
     // console
     v8::Local<v8::Object> console = Console::createConsole(context, nullptr, 1024);
-    global->DefineOwnProperty(context, Nan::New("console").ToLocalChecked(), console, readOnlyFlags);
+    obj->Set(context, Nan::New("console").ToLocalChecked(), console);
 
     // canvas
     v8::Local<v8::Object> bindings = v8::Object::New(mIsolate);
     Engine::Context2d::Initialize(bindings);
-    global->DefineOwnProperty(context, Nan::New("bindings").ToLocalChecked(), bindings);
-
-    // attach the context to the persistent context, to avoid V8 GC-ing it
-    v8::Persistent<v8::Context> mPersistentContext;
-    mPersistentContext.Reset(mIsolate, context);
+    obj->Set(context, Nan::New("bindings").ToLocalChecked(), bindings);
 
     InspectorClient::GetInstance()->init();
 }
@@ -111,4 +123,21 @@ jstring V8EngineWrapper::runScript(jstring sourceScript) {
     // Run the script to get the result.
     v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
     return tns::ArgConverter::ConvertToJavaString(result);
+}
+
+jlong V8EngineWrapper::registerJavaMethod(jlong objectHandle, jstring functionName, jboolean voidMethod) {
+    SETUP(mIsolate);
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::New(mIsolate, *reinterpret_cast<v8::Persistent<v8::Object>*>(objectHandle));
+    Local<v8::String> v8FunctionName = tns::ArgConverter::jstringToV8String(mIsolate, functionName);
+    mIsolate->IdleNotificationDeadline(1);
+    MethodDescriptor* md = new MethodDescriptor();
+    Local<External> ext = External::New(mIsolate, md);
+
+    md->methodID = reinterpret_cast<jlong>(md);
+    md->v8EnginePtr = reinterpret_cast<jlong>(this);
+
+    md->obj.Reset(mIsolate, ext);
+    md->obj.SetWeak();
+
+    return md->methodID;
 }
