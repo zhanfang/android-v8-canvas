@@ -40,12 +40,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 v8Engine.requireJSFile("/data/data/com.example.zhanfang.test/files/app/test.js");
-                v8Engine.evalJavascript("console.log('zhanfang')", new ValueCallback<String>() {
-                    @Override
-                    public void onReceiveValue(String value) {
-                        Log.d(TAG, "success:" + value);
-                    }
-                });
             }
         });
 
@@ -96,5 +90,14 @@ public class MainActivity extends AppCompatActivity {
     public void btnClick(View v) {
         Intent intent = new Intent(this, MyFlutterActivity.class);
         startActivity(intent);
+    }
+
+    public void callToJavaClick(View v) {
+        v8Engine.evalJavascript("call_to_java('zhanfang')", new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+                Log.d(TAG, "success:" + value);
+            }
+        });
     }
 }

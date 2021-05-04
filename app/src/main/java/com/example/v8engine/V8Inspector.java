@@ -90,7 +90,7 @@ public class V8Inspector {
         @Override
         protected void onOpen() {
             Log.d("java", "v8 inspector opened");
-            V8.connect(V8InspectorWebSocket.this);
+            connect(V8InspectorWebSocket.this);
         }
 
         @Override
@@ -98,7 +98,7 @@ public class V8Inspector {
             mainHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    V8.disconnect();
+                    disconnect();
                 }
             });
         }
@@ -126,7 +126,7 @@ public class V8Inspector {
                     public void run() {
                         String nextMessage = inspectorMessages.poll();
                         while (nextMessage != null) {
-                            V8.dispatchMessage(nextMessage);
+                            dispatchMessage(nextMessage);
                             nextMessage = inspectorMessages.poll();
                         }
                     }
@@ -160,7 +160,7 @@ public class V8Inspector {
         @Override
         protected void onException(IOException exception) {
             exception.printStackTrace();
-            V8.disconnect();
+            disconnect();
         }
     }
 
@@ -224,13 +224,13 @@ public class V8Inspector {
     // schedule a debug line break at first convenience
     private void processDebugBreak() {
         processDebugBreakMessages();
-        V8.scheduleBreak();
+        scheduleBreak();
     }
 
     private void processDebugBreakMessages() {
         while (!pendingInspectorMessages.isEmpty()) {
             String inspectorMessage = pendingInspectorMessages.poll();
-            V8.dispatchMessage(inspectorMessage);
+            dispatchMessage(inspectorMessage);
         }
     }
 
@@ -299,4 +299,16 @@ public class V8Inspector {
 
         return type;
     }
+
+    public native void createInspector(long nativeV8Engine);
+
+    public native void connect(Object connection);
+
+    public native void waitForFrontend();
+
+    public native void scheduleBreak();
+
+    public native void disconnect();
+
+    public native void dispatchMessage(String message);
 }

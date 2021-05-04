@@ -5,12 +5,19 @@ import android.webkit.ValueCallback;
 
 import com.example.v8engine.thread.V8ThreadPolicy;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class V8Engine implements IJSRuntime {
 
+    private V8 v8;
     private String TAG = "JavaV8";
-    private long v8ThreadId = 0;
     private V8ThreadPolicy v8ThreadPolicy;
-    private long nativeV8Engine;
+    private Map<Long, MethodDescriptor> functionRegistry = new HashMap<Long, MethodDescriptor>();
+
+    private class MethodDescriptor {
+        JavaCallback callback;
+    }
 
     public static void loadLib() {
         // 加载 so 库文件
@@ -21,7 +28,7 @@ public class V8Engine implements IJSRuntime {
      * 构造函数
      */
     public V8Engine() {
-        nativeV8Engine = V8.NewV8Engine();
+        v8 = V8.createRuntime();
         v8ThreadPolicy = new V8ThreadPolicy(this);
     }
 
@@ -38,16 +45,20 @@ public class V8Engine implements IJSRuntime {
      * 启动引擎，执行 JS Bundle 文件
      */
     public void startEngineInternal() {
-        Log.d(TAG, "v8 thread start");
-        v8ThreadId = Thread.currentThread().getId();
-        V8.initV8(nativeV8Engine, null, v8ThreadId);
+        Log.d(TAG, "v8 thread start in " + Thread.currentThread().getId());
+        registerJavaMethod(new JavaCallback() {
+            @Override
+            public void invoke(String receiver, int parameters) {
+                Log.d(TAG, receiver);
+            }
+        }, "call_to_java");
     }
 
     public void requireJSFile(final String filePath) {
         runOnJSThread(new Runnable() {
             @Override
             public void run() {
-                V8.require(nativeV8Engine, filePath);
+                v8.require(filePath);
             }
         });
     }
@@ -93,7 +104,7 @@ public class V8Engine implements IJSRuntime {
      * @param resultCb
      */
     private void evalJavascriptImpl(final String js, final ValueCallback<String> resultCb) {
-        String res = V8.runScript(nativeV8Engine, js);
+        String res = v8.runScript(js);
         if (resultCb != null) {
             resultCb.onReceiveValue(res);
         }
@@ -108,7 +119,21 @@ public class V8Engine implements IJSRuntime {
      *
      */
     public void registerJavaMethod(final JavaCallback callback, final String jsFunctionName) {
-//        v8.checkThread();
-//        V8.registerJavaMethod(nativeV8Engine, callback, getHandle(), jsFunctionName, false);
+        // 需要存储 callback，保证可被调用，并需要实现调用函数
+//        long methodId = v8(jsFunctionName, false);
+//        MethodDescriptor methodDescriptor = new MethodDescriptor();
+//        methodDescriptor.callback = callback;
+//        functionRegistry.put(methodId, methodDescriptor);
+    }
+
+    /**
+     * c++ 调用 java 回调的方法
+     * @param methodId
+     */
+    public void callObjectJavaMethod(final long methodId, V8Object recevier) {
+        MethodDescriptor methodDescriptor = functionRegistry.get(methodId);
+        if (methodDescriptor.callback != null) {
+            methodDescriptor.callback.invoke("123", 123);
+        }
     }
 }

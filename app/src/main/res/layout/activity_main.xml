@@ -34,4 +34,14 @@
         android:onClick="btnClick"
         />
 
+    <Button
+        android:id="@+id/java_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="callToJavaClick"
+        android:text="call to java"
+        android:textSize="20sp"
+        android:translationY="800px" />
+
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

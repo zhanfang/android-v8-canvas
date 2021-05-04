@@ -11,8 +11,10 @@
 #include <nan.h>
 
 using namespace v8;
+using namespace Nan;
 
 #define SETUP(isolate)\
+    Locker locker(isolate);\
     Isolate::Scope isolateScope(isolate);\
     HandleScope handle_scope(isolate);\
     Local<Context> context = isolate->GetCurrentContext();\
@@ -26,25 +28,25 @@ static void jsWindowObjectAccessor(Local<String> property, const v8::PropertyCal
 class MethodDescriptor {
 public:
     jlong methodID;
-    jlong v8EnginePtr;
+    jlong v8RuntimePtr;
     Persistent<External> obj;
 };
 
 V8Runtime::V8Runtime(JNIEnv *env, jobject obj) {
-
+    env_ = env;
 }
 
 V8Runtime::~V8Runtime() {}
 
-void V8Runtime::initialize(jstring globalAlias, jlong threadId) {
+void V8Runtime::createIsolate(jstring globalAlias) {
     // Initialize V8.
-    LOGD("init v8");
-    mThreadId = threadId;
+    LOGD("create v8 isolate");
 
     // Create a new Isolate and make it the current one.
     v8::Isolate::CreateParams create_params;
     create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
     mIsolate = v8::Isolate::New(create_params);
+    Locker locker(mIsolate);
 
     v8::Isolate::Scope isolate_scope(mIsolate);
     // Create a stack-allocated handle scope.
@@ -82,9 +84,7 @@ void V8Runtime::createInspector() {
 }
 
 void V8Runtime::require(std::string src, std::string filename) {
-    v8::Isolate::Scope isolate_scope(mIsolate);
-    v8::HandleScope handle_scope(mIsolate);
-    v8::Local<v8::Context> context = mIsolate->GetCurrentContext();
+    SETUP(mIsolate);
 
     auto source = Nan::New(src).ToLocalChecked();
     auto originName = "file:/" + filename;
@@ -107,14 +107,9 @@ void V8Runtime::require(std::string src, std::string filename) {
 }
 
 jstring V8Runtime::runScript(jstring sourceScript) {
-    v8::Isolate::Scope isolate_scope(mIsolate);
-    v8::HandleScope handle_scope(mIsolate);
+    SETUP(mIsolate);
 
     v8::TryCatch tryCatch(mIsolate);
-
-    // Enter the context for compiling and running the hello world script.
-    v8::Local<v8::Context> context = mIsolate->GetCurrentContext();
-    v8::Context::Scope context_scope(context);
 
     // Create a string containing the JavaScript source code.
     v8::Local<v8::String> source = tns::ArgConverter::jstringToV8String(mIsolate, sourceScript);
@@ -128,19 +123,48 @@ jstring V8Runtime::runScript(jstring sourceScript) {
     return tns::ArgConverter::ConvertToJavaString(result);
 }
 
-jlong V8Runtime::registerJavaMethod(jlong objectHandle, jstring functionName, jboolean voidMethod) {
+jlong V8Runtime::initNewV8Object() {
     SETUP(mIsolate);
-    v8::Local<v8::Object> object = v8::Local<v8::Object>::New(mIsolate, *reinterpret_cast<v8::Persistent<v8::Object>*>(objectHandle));
+    Local<Object> object = Object::New(mIsolate);
+    Persistent<Object>* container = new Persistent<Object>;
+    container->Reset(mIsolate, object);
+    return reinterpret_cast<jlong>(container);
+}
+
+void objectCallback(const NAN_METHOD_ARGS_TYPE args) {
+    Local<External> data = Local<External>::Cast(args.Data());
+    void *methodDescriptorPtr = data->Value();
+    MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr);
+    Isolate* isolate = runtime->getIsolate();
+    SETUP(isolate);
+
+}
+
+jlong V8Runtime::registerJavaMethod(jstring functionName, jboolean voidMethod) {
+    SETUP(mIsolate);
+
+    v8::FunctionCallback callback = objectCallback;
+
+    Local<Object> globalObject = Local<Object>::New(mIsolate, *globalObject_);
     Local<v8::String> v8FunctionName = tns::ArgConverter::jstringToV8String(mIsolate, functionName);
     mIsolate->IdleNotificationDeadline(1);
+
     MethodDescriptor* md = new MethodDescriptor();
     Local<External> ext = External::New(mIsolate, md);
 
     md->methodID = reinterpret_cast<jlong>(md);
-    md->v8EnginePtr = reinterpret_cast<jlong>(this);
+    md->v8RuntimePtr = reinterpret_cast<jlong>(this);
+
+    MaybeLocal<Function> func = Function::New(context, callback, ext);
+
+    if (!func.IsEmpty()) {
+        globalObject->Set(context, v8FunctionName, func.ToLocalChecked());
+    }
 
     md->obj.Reset(mIsolate, ext);
     md->obj.SetWeak();
 
     return md->methodID;
 }
+
