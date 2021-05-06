@@ -25,21 +25,19 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     v8::V8::InitializePlatform(platform_);
     v8::V8::Initialize();
 
+    V8Runtime::OnLoad();
+
     return JNI_VERSION_1_6;
 }
 
-extern "C" JNIEXPORT long JNICALL Java_com_example_v8engine_V8_NewV8Engine(
-        JNIEnv *env, jobject obj) {
-    V8Runtime* ptr = new V8Runtime(env, obj);
-    jlong nativePtr = reinterpret_cast<jlong>(ptr);
 
-    return nativePtr;
-}
-
-extern "C" JNIEXPORT void JNICALL Java_com_example_v8engine_V8_createIsolate(
-        JNIEnv *env, jobject /* this */, jlong nativeV8Engine, jstring globalAlias) {
-    V8Runtime* ptr = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+extern "C" JNIEXPORT jlong JNICALL Java_com_example_v8engine_V8__1createIsolate(
+        JNIEnv *env, jobject v8 /* this */, jstring globalAlias) {
+    V8Runtime* ptr = new V8Runtime(env, v8);
     ptr->createIsolate(globalAlias);
+
+    jlong nativePtr = reinterpret_cast<jlong>(ptr);
+    return nativePtr;
 }
 
 extern "C" jint JNIEXPORT Java_com_example_v8engine_V8_getType(
@@ -66,15 +64,21 @@ extern "C" jstring JNIEXPORT Java_com_example_v8engine_V8__1runScript(
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_com_example_v8engine_V8__1registerJavaMethod(
-        JNIEnv *env, jobject, jlong nativeV8Engine, jstring functionName, jboolean voidMethod) {
+        JNIEnv *env, jobject, jlong nativeV8Engine, jlong objectHandle, jstring functionName, jboolean voidMethod) {
     V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
-    return runtime->registerJavaMethod(functionName, false);
+    return runtime->registerJavaMethod(objectHandle, functionName, false);
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_com_example_v8engine_V8_initNewV8Object(
         JNIEnv *env, jobject, jlong nativeV8Engine) {
     V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
     return runtime->initNewV8Object();
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_com_example_v8engine_V8__1getGlobalObject(
+        JNIEnv *env, jobject, jlong nativeV8Engine) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+    return runtime->getGlobalObject();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_example_v8engine_V8_acquireLock(

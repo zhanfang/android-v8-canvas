@@ -81,7 +81,6 @@ abstract public class V8Value implements Closeable {
         return v8;
     }
 
-
     /**
      * Returns a string representation of the V8 Type.
      * @param type Type to return as a string. See constants in V8Value.
@@ -140,6 +139,11 @@ abstract public class V8Value implements Closeable {
     public int getV8Type() {
         v8.checkThread();
         return v8.getType(v8.getV8EnginePtr(), objectHandle);
+    }
+
+    protected long getHandle() {
+        checkReleased();
+        return objectHandle;
     }
 
     /**

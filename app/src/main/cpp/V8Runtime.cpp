@@ -13,11 +13,11 @@
 using namespace v8;
 using namespace Nan;
 
-#define SETUP(isolate)\
-    Locker locker(isolate);\
+#define SETUP(runtime)\
+    Isolate* isolate = runtime->mIsolate;\
     Isolate::Scope isolateScope(isolate);\
     HandleScope handle_scope(isolate);\
-    Local<Context> context = isolate->GetCurrentContext();\
+    Local<Context> context = Local<Context>::New(isolate, runtime->context_);\
     Context::Scope context_scope(context);
 
 
@@ -32,8 +32,21 @@ public:
     Persistent<External> obj;
 };
 
+jclass v8Cls = nullptr;
+jmethodID v8CallObjectJavaMethodMethodID = nullptr;
+
+void V8Runtime::OnLoad() {
+    JNIEnv* env = JEnv();
+
+    //  on first creation, store  a handle to JAVA classes
+    v8Cls = (jclass)env->NewGlobalRef((env)->FindClass("com/example/v8engine/V8"));
+
+    // Get all method IDs
+    v8CallObjectJavaMethodMethodID = env->GetMethodID(v8Cls, "callObjectJavaMethod", "(J)V");
+}
+
 V8Runtime::V8Runtime(JNIEnv *env, jobject obj) {
-    env_ = env;
+    v8 = env->NewGlobalRef(obj);
 }
 
 V8Runtime::~V8Runtime() {}
@@ -46,7 +59,7 @@ void V8Runtime::createIsolate(jstring globalAlias) {
     v8::Isolate::CreateParams create_params;
     create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
     mIsolate = v8::Isolate::New(create_params);
-    Locker locker(mIsolate);
+//    Locker locker(mIsolate);
 
     v8::Isolate::Scope isolate_scope(mIsolate);
     // Create a stack-allocated handle scope.
@@ -64,16 +77,17 @@ void V8Runtime::createIsolate(jstring globalAlias) {
     globalObject_ = new Persistent<Object>;
     globalObject_->Reset(mIsolate, context->Global()->GetPrototype()->ToObject(context).ToLocalChecked());
 
-    context->Enter();
+    // enter and exit
+    Context::Scope context_scope(context);
 
     Local<Object> obj = Local<Object>::New(mIsolate, *globalObject_);
 
     // console
-    v8::Local<v8::Object> console = Console::createConsole(context, nullptr, 1024);
+    Local<v8::Object> console = Console::createConsole(context, nullptr, 1024);
     obj->Set(context, Nan::New("console").ToLocalChecked(), console);
 
     // canvas
-    v8::Local<v8::Object> bindings = v8::Object::New(mIsolate);
+    Local<Object> bindings = Object::New(mIsolate);
     Engine::Context2d::Initialize(bindings);
     obj->Set(context, Nan::New("bindings").ToLocalChecked(), bindings);
     InspectorClient::GetInstance()->init();
@@ -84,7 +98,7 @@ void V8Runtime::createInspector() {
 }
 
 void V8Runtime::require(std::string src, std::string filename) {
-    SETUP(mIsolate);
+    SETUP(this);
 
     auto source = Nan::New(src).ToLocalChecked();
     auto originName = "file:/" + filename;
@@ -107,7 +121,7 @@ void V8Runtime::require(std::string src, std::string filename) {
 }
 
 jstring V8Runtime::runScript(jstring sourceScript) {
-    SETUP(mIsolate);
+    SETUP(this);
 
     v8::TryCatch tryCatch(mIsolate);
 
@@ -124,7 +138,7 @@ jstring V8Runtime::runScript(jstring sourceScript) {
 }
 
 jlong V8Runtime::initNewV8Object() {
-    SETUP(mIsolate);
+    SETUP(this);
     Local<Object> object = Object::New(mIsolate);
     Persistent<Object>* container = new Persistent<Object>;
     container->Reset(mIsolate, object);
@@ -136,17 +150,17 @@ void objectCallback(const NAN_METHOD_ARGS_TYPE args) {
     void *methodDescriptorPtr = data->Value();
     MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
     V8Runtime* runtime = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr);
-    Isolate* isolate = runtime->getIsolate();
-    SETUP(isolate);
-
+    SETUP(runtime);
+    JNIEnv* env = JEnv();
+    env->CallVoidMethod(runtime->v8, v8CallObjectJavaMethodMethodID, md->methodID);
 }
 
-jlong V8Runtime::registerJavaMethod(jstring functionName, jboolean voidMethod) {
-    SETUP(mIsolate);
+jlong V8Runtime::registerJavaMethod(jlong objectHandle, jstring functionName, jboolean voidMethod) {
+    SETUP(this);
 
     v8::FunctionCallback callback = objectCallback;
 
-    Local<Object> globalObject = Local<Object>::New(mIsolate, *globalObject_);
+    Local<Object> globalObject = Local<Object>::New(mIsolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
     Local<v8::String> v8FunctionName = tns::ArgConverter::jstringToV8String(mIsolate, functionName);
     mIsolate->IdleNotificationDeadline(1);
 

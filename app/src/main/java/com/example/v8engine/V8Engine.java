@@ -5,19 +5,11 @@ import android.webkit.ValueCallback;
 
 import com.example.v8engine.thread.V8ThreadPolicy;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class V8Engine implements IJSRuntime {
 
     private V8 v8;
     private String TAG = "JavaV8";
     private V8ThreadPolicy v8ThreadPolicy;
-    private Map<Long, MethodDescriptor> functionRegistry = new HashMap<Long, MethodDescriptor>();
-
-    private class MethodDescriptor {
-        JavaCallback callback;
-    }
 
     public static void loadLib() {
         // 加载 so 库文件
@@ -28,7 +20,6 @@ public class V8Engine implements IJSRuntime {
      * 构造函数
      */
     public V8Engine() {
-        v8 = V8.createRuntime();
         v8ThreadPolicy = new V8ThreadPolicy(this);
     }
 
@@ -46,6 +37,7 @@ public class V8Engine implements IJSRuntime {
      */
     public void startEngineInternal() {
         Log.d(TAG, "v8 thread start in " + Thread.currentThread().getId());
+        v8 = V8.createRuntime();
         registerJavaMethod(new JavaCallback() {
             @Override
             public void invoke(String receiver, int parameters) {
@@ -119,21 +111,6 @@ public class V8Engine implements IJSRuntime {
      *
      */
     public void registerJavaMethod(final JavaCallback callback, final String jsFunctionName) {
-        // 需要存储 callback，保证可被调用，并需要实现调用函数
-//        long methodId = v8(jsFunctionName, false);
-//        MethodDescriptor methodDescriptor = new MethodDescriptor();
-//        methodDescriptor.callback = callback;
-//        functionRegistry.put(methodId, methodDescriptor);
-    }
-
-    /**
-     * c++ 调用 java 回调的方法
-     * @param methodId
-     */
-    public void callObjectJavaMethod(final long methodId, V8Object recevier) {
-        MethodDescriptor methodDescriptor = functionRegistry.get(methodId);
-        if (methodDescriptor.callback != null) {
-            methodDescriptor.callback.invoke("123", 123);
-        }
+        v8.registerJavaMethod(callback, jsFunctionName);
     }
 }

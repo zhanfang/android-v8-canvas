@@ -19,6 +19,22 @@ public class V8Object extends V8Value{
     }
 
     /**
+     * Register a Java method as a JavaScript function. When the JS Function is invoked
+     * the Java method will be called.
+     *
+     * @param callback The JavaCallback to call when the JSFunction is invoked.
+     * @param jsFunctionName The name of the JSFunction.
+     *
+     * @return The receiver.
+     */
+    public V8Object registerJavaMethod(final JavaCallback callback, final String jsFunctionName) {
+        v8.checkThread();
+        checkReleased();
+        v8.registerCallback(callback, getHandle(), jsFunctionName);
+        return this;
+    }
+
+    /**
      * Register a Java method reflectively given it's name a signature. The option to include
      * the JS Object in the callback can be specified by setting includeReceiver true.
      *

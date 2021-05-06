@@ -2,16 +2,36 @@ package com.example.v8engine;
 
 import android.view.Surface;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
+/**
+ * An isolated V8Runtime. All JavaScript execution must exist
+ * on a single runtime, and data is not shared between runtimes.
+ * A runtime must be created and released when finished.
+ *
+ * All access to a runtime must come from the same thread, unless
+ * the thread explicitly gives up control using the V8Locker.
+ *
+ * A public static factory method can be used to create the runtime.
+ *
+ * V8 runtime = V8.createV8Runtime();
+ *
+ */
 public class V8 extends V8Object {
 
     private static int runtimeCounter = 0;
-    private boolean released = false;
     private long v8EnginePtr;
     private V8Locker locker;
     private long                         objectReference         = 0;
     private LinkedList<ReferenceHandler> referenceHandlers       = new LinkedList<ReferenceHandler>();
+
+    private Map<Long, MethodDescriptor> functionRegistry = new HashMap<Long, MethodDescriptor>();
+
+    private class MethodDescriptor {
+        JavaCallback callback;
+    }
 
     protected V8(V8 v8) {
         super(v8);
@@ -19,9 +39,11 @@ public class V8 extends V8Object {
 
     protected V8(final String globalAlias) {
         super(null);
-        v8EnginePtr = NewV8Engine();
-        createIsolate(v8EnginePtr, globalAlias);
+        released = false;
+        v8EnginePtr = _createIsolate(v8EnginePtr, globalAlias);
         locker = new V8Locker(this);
+        checkThread();
+        objectHandle = _getGlobalObject(v8EnginePtr);
     }
 
     public static V8 createRuntime() {
@@ -42,9 +64,31 @@ public class V8 extends V8Object {
         return  _runScript(v8EnginePtr, script);
     }
 
-    public void registerCallback(final Object object, final String jsFunctionName, final boolean includeReceiver) {
-        _registerJavaMethod(v8EnginePtr, jsFunctionName, false);
+    // ---------------------- register and call java method STRAT--------------------------
+
+    public void registerCallback(final JavaCallback callback, final long objectHandle, final String jsFunctionName) {
+        long methodId = _registerJavaMethod(v8EnginePtr, objectHandle, jsFunctionName, false);
+        createAndRegisterMethodDescriptor(callback, methodId);
     }
+
+    public void registerCallback(final Object object, final String jsFunctionName, final boolean includeReceiver) {
+        // _registerJavaMethod(v8EnginePtr, jsFunctionName, false);
+    }
+
+    void createAndRegisterMethodDescriptor(final JavaCallback callback, final long methodID) {
+        MethodDescriptor methodDescriptor = new MethodDescriptor();
+        methodDescriptor.callback = callback;
+        functionRegistry.put(methodID, methodDescriptor);
+    }
+
+    protected void callObjectJavaMethod(final long methodId) {
+        MethodDescriptor methodDescriptor = functionRegistry.get(methodId);
+        if (methodDescriptor.callback != null) {
+            methodDescriptor.callback.invoke("123", 123);
+        }
+    }
+
+    // ---------------------- register and call java method END--------------------------
 
     long getV8EnginePtr() {
         return v8EnginePtr;
@@ -83,28 +127,26 @@ public class V8 extends V8Object {
         }
     }
 
-    /**
-     * 创建 c++ 的 V8Engine
-     * @return nativePtr
-     */
-    private native long NewV8Engine();
+    // ---------------------------- native method -----------------------------------
 
-    private native void createIsolate(final long nativeV8Engine, String globalAlias);
+    private native long _createIsolate(final long v8RuntimePtr, String globalAlias);
 
-    private native void _require(final long nativeV8Engine, String filePath);
+    private native long _getGlobalObject(final long v8RuntimePtr);
 
-    private native String _runScript(final long nativeV8Engine, String script);
+    private native void _require(final long v8RuntimePtr, String filePath);
 
-    private native long _registerJavaMethod(final long nativeV8Engine, final String functionName, final boolean voidMethod);
+    private native String _runScript(final long v8RuntimePtr, String script);
 
-    public native long initNewV8Object(final long nativeV8Engine);
+    private native long _registerJavaMethod(final long v8RuntimePtr, final long objectHandle, final String functionName, final boolean voidMethod);
 
-    protected native int getType(final long nativeV8Engine, final long objectHandle);
+    public native long initNewV8Object(final long v8RuntimePtr);
 
-    protected native void acquireLock(final long nativeV8Engine);
-    protected native void releaseLock(final long nativeV8Engine);
+    protected native int getType(final long v8RuntimePtr, final long objectHandle);
 
-    protected native void release(final long nativeV8Engine, final long objectHandle);
+    protected native void acquireLock(final long v8RuntimePtr);
+    protected native void releaseLock(final long v8RuntimePtr);
+
+    protected native void release(final long v8RuntimePtr, final long objectHandle);
 
     public static native void onSurfaceCreate(Surface jSurface, int width, int height);
 }

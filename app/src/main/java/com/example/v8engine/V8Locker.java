@@ -14,6 +14,7 @@ public class V8Locker {
 
     V8Locker(final V8 runtime) {
         this.runtime = runtime;
+        acquire();
     }
 
     /**
@@ -23,7 +24,7 @@ public class V8Locker {
      */
     public synchronized void acquire() {
         if ((thread != null) && (thread != Thread.currentThread())) {
-            throw new Error("Invalid V8 thread access: current thread is " + Thread.currentThread() + " while the locker has thread " + thread);
+            throw new Error("Invalid V8 thread access: current thread is " + Thread.currentThread().getId() + " while the locker has thread " + thread.getId());
         }
         else if (thread == Thread.currentThread()) {
             return;
