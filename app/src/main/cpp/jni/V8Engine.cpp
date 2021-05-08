@@ -41,49 +41,61 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_example_v8engine_V8__1createIsolate(
 }
 
 extern "C" jint JNIEXPORT Java_com_example_v8engine_V8_getType(
-        JNIEnv *env, jobject obj, jlong nativeV8Engine, jlong objectHandle) {
-    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+        JNIEnv *env, jobject obj, jlong nativeV8Runtime, jlong objectHandle) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
 
     return 0;
 }
 
 extern "C" void JNIEXPORT Java_com_example_v8engine_V8__1require(
-        JNIEnv *env, jobject obj, jlong nativeV8Engine, jstring filePath) {
+        JNIEnv *env, jobject obj, jlong nativeV8Runtime, jstring filePath) {
     string filename = ArgConverter::jstringToString(filePath);
     string src = File::ReadText(filename);
-    V8Runtime* ptr = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+    V8Runtime* ptr = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
     ptr->require(src, filename);
     Canvas::globalCanvas->flush();
 }
 
 extern "C" jstring JNIEXPORT Java_com_example_v8engine_V8__1runScript(
-        JNIEnv *env, jobject obj, jlong nativeV8Engine, jstring sourceScript) {
-    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+        JNIEnv *env, jobject obj, jlong nativeV8Runtime, jstring sourceScript) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
 
     return runtime->runScript(sourceScript);
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_com_example_v8engine_V8__1registerJavaMethod(
-        JNIEnv *env, jobject, jlong nativeV8Engine, jlong objectHandle, jstring functionName, jboolean voidMethod) {
-    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+        JNIEnv *env, jobject, jlong nativeV8Runtime, jlong objectHandle, jstring functionName, jboolean voidMethod) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
     return runtime->registerJavaMethod(objectHandle, functionName, false);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_example_v8engine_V8_initNewV8Object(
-        JNIEnv *env, jobject, jlong nativeV8Engine) {
-    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+extern "C" JNIEXPORT jlong JNICALL Java_com_example_v8engine_V8__1initNewV8Object(
+        JNIEnv *env, jobject, jlong nativeV8Runtime) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
     return runtime->initNewV8Object();
 }
 
+extern "C" JNIEXPORT jstring JNICALL Java_com_example_v8engine_V8__1toString(
+        JNIEnv *env, jobject, jlong nativeV8Runtime, jlong objectHandle) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
+    return runtime->toString(objectHandle);
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_com_example_v8engine_V8__1arrayGet(
+        JNIEnv *env, jobject, jlong nativeV8Runtime, jint expectedType, jlong arrayHandle, jint index) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
+    return runtime->arrayGet(expectedType, arrayHandle, index);
+}
+
 extern "C" JNIEXPORT jlong JNICALL Java_com_example_v8engine_V8__1getGlobalObject(
-        JNIEnv *env, jobject, jlong nativeV8Engine) {
-    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+        JNIEnv *env, jobject, jlong nativeV8Runtime) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
     return runtime->getGlobalObject();
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_example_v8engine_V8_acquireLock(
-        JNIEnv *env, jobject, jlong nativeV8Engine) {
-    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+        JNIEnv *env, jobject, jlong nativeV8Runtime) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
     if (runtime->getIsolate()->InContext()) {
         // throw exception "Cannot acquire lock while in a V8 Context"
         return;
@@ -93,8 +105,8 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_v8engine_V8_acquireLock(
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_example_v8engine_V8_releaseLock(
-        JNIEnv *env, jobject, jlong nativeV8Engine) {
-    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+        JNIEnv *env, jobject, jlong nativeV8Runtime) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
     if (runtime->getIsolate()->InContext()) {
         // throw exception "Cannot acquire lock while in a V8 Context"
         return;
@@ -104,8 +116,8 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_v8engine_V8_releaseLock(
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_example_v8engine_V8_release(
-        JNIEnv *env, jobject, jlong nativeV8Engine, jlong objectHandle) {
-    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+        JNIEnv *env, jobject, jlong nativeV8Runtime, jlong objectHandle) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
     Isolate* isolate = runtime->getIsolate();
     Locker locker(isolate);
     HandleScope handleScope(isolate);

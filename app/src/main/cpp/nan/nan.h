@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <string>
 #include <v8.h>
+#include "JEnv.h"
 #include "nan_callbacks.h"
 
 using namespace v8;
@@ -21,8 +22,6 @@ namespace Nan {
 
     typedef const v8::PropertyCallbackInfo<void>& NAN_SETTER_ARGS_TYPE;
     typedef void NAN_SETTER_RETURN_TYPE;
-
-    typedef v8::Local<v8::Object> ADDON_REGISTER_FUNCTION_ARGS_TYPE;
 
     typedef v8::String::ExternalOneByteStringResource ExternalOneByteStringResource;
 

@@ -4,8 +4,8 @@
 #include "inspector/InspectorClient.h"
 
 extern "C" JNIEXPORT void Java_com_example_v8engine_V8Inspector_createInspector(
-    JNIEnv *env, jobject, jlong nativeV8Engine) {
-    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Engine);
+    JNIEnv *env, jobject, jlong nativeV8Runtime) {
+    V8Runtime* runtime = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
     runtime->createInspector();
 }
 

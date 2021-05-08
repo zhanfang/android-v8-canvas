@@ -40,9 +40,11 @@ public class V8Engine implements IJSRuntime {
         v8 = V8.createRuntime();
         registerJavaMethod(new JavaCallback() {
             @Override
-            public void invoke(String receiver, int parameters) {
-                Log.d(TAG, receiver);
+            public Object invoke(V8Object receiver, V8Array parameters) {
+                Log.d(TAG, parameters.get(0).toString());
+                return null;
             }
+
         }, "call_to_java");
     }
 

@@ -21,5 +21,5 @@ public interface JavaCallback {
      * @return A result that should be passed back to JavaScript. The
      * result must be either an Integer, Double, Boolean, String or V8Value.
      */
-    public void invoke(String receiver, int parameters);
+    public Object invoke(V8Object receiver, V8Array parameters);
 }

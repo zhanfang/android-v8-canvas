@@ -86,10 +86,10 @@ String16 PageResource::getContent(protocol::String* errorString) {
 
         if (shouldEncode) {
             auto base64EncodedString = base64_encode(buff, size);
-            m_content = tns::Util::ConvertFromUtf8ToUtf16(base64EncodedString);
+            m_content = Util::ConvertFromUtf8ToUtf16(base64EncodedString);
         } else {
             auto utf8Content = std::string(reinterpret_cast<char*>(buff));
-            auto utf16Content = tns::Util::ConvertFromUtf8ToUtf16(utf8Content);
+            auto utf16Content = Util::ConvertFromUtf8ToUtf16(utf8Content);
             m_content = utf16Content;
         }
 

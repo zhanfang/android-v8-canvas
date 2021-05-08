@@ -2,7 +2,6 @@
 #include <assert.h>
 #include "Util.h"
 
-using namespace tns;
 using namespace std;
 
 JEnv::JEnv()

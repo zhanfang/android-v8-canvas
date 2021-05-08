@@ -53,7 +53,7 @@ abstract public class V8Value implements Closeable {
         }
     }
 
-    protected void initialize(final long runtimePtr) {
+    protected void initialize(final long runtimePtr, final Object data) {
         long objectHandle = v8.initNewV8Object(runtimePtr);
         released = false;
         addObjectReference(objectHandle);
@@ -138,12 +138,21 @@ abstract public class V8Value implements Closeable {
      */
     public int getV8Type() {
         v8.checkThread();
-        return v8.getType(v8.getV8EnginePtr(), objectHandle);
+        return v8.getType(v8.getV8EnginePtr(), getHandle());
     }
 
     protected long getHandle() {
         checkReleased();
         return objectHandle;
+    }
+
+    public boolean isUndefined() {
+        return false;
+    }
+
+    public String toString() {
+        v8.checkThread();
+        return v8.toString(v8.getV8EnginePtr(), getHandle());
     }
 
     /**

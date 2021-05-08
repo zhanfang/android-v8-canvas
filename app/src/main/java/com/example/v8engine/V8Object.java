@@ -14,8 +14,23 @@ package com.example.v8engine;
  * when they are no longer need in Java.
  */
 public class V8Object extends V8Value{
-    protected V8Object(V8 v8) {
+
+    /**
+     * Create a new V8Object and associate it with a runtime.
+     * Once created, it must be released.
+     *
+     * @param v8 The runtime on which to associate the V8Object.
+     */
+    public V8Object(V8 v8) {
+        this(v8, null);
+    }
+
+    protected V8Object(V8 v8, final Object data) {
         super(v8);
+        if (v8 != null) {
+            this.v8.checkThread();
+            initialize(this.v8.getV8EnginePtr(), data);
+        }
     }
 
     /**

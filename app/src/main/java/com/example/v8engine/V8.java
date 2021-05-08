@@ -64,6 +64,18 @@ public class V8 extends V8Object {
         return  _runScript(v8EnginePtr, script);
     }
 
+    protected long initNewV8Object(final long v8RuntimePtr) {
+        return  _initNewV8Object(v8RuntimePtr);
+    }
+
+    protected String toString(final long v8RuntimePtr, final long objectHandle) {
+        return _toString(v8RuntimePtr, objectHandle);
+    }
+
+    protected Object arrayGet(final long v8RuntimePtr, final int expectedType, final long arrayHandle, final int index) {
+        return _arrayGet(v8RuntimePtr, expectedType, arrayHandle, index);
+    }
+
     // ---------------------- register and call java method STRAT--------------------------
 
     public void registerCallback(final JavaCallback callback, final long objectHandle, final String jsFunctionName) {
@@ -81,11 +93,12 @@ public class V8 extends V8Object {
         functionRegistry.put(methodID, methodDescriptor);
     }
 
-    protected void callObjectJavaMethod(final long methodId) {
+    protected Object callObjectJavaMethod(final long methodId, final V8Object receiver, final V8Array params) {
         MethodDescriptor methodDescriptor = functionRegistry.get(methodId);
         if (methodDescriptor.callback != null) {
-            methodDescriptor.callback.invoke("123", 123);
+            return methodDescriptor.callback.invoke(receiver, params);
         }
+        return null;
     }
 
     // ---------------------- register and call java method END--------------------------
@@ -139,7 +152,11 @@ public class V8 extends V8Object {
 
     private native long _registerJavaMethod(final long v8RuntimePtr, final long objectHandle, final String functionName, final boolean voidMethod);
 
-    public native long initNewV8Object(final long v8RuntimePtr);
+    private native long _initNewV8Object(final long v8RuntimePtr);
+
+    private native String _toString(final long v8RuntimePtr, final long objectHandle);
+
+    private native Object _arrayGet(long v8RuntimePtr, int expectedType, long arrayHandle, int index);
 
     protected native int getType(final long v8RuntimePtr, final long objectHandle);
 

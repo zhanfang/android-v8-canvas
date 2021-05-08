@@ -33,19 +33,37 @@ public:
 };
 
 jclass v8Cls = nullptr;
+jclass v8ArrayCls = nullptr;
+jclass undefinedV8ArrayCls = nullptr;
+jclass v8ObjectCls = nullptr;
+
+jmethodID v8ArrayInitMethodID = nullptr;
+jmethodID undefinedV8ArrayInitMethodID = nullptr;
+jmethodID v8ArrayGetHandleMethodID = nullptr;
+jmethodID v8ObjectInitMethodID = nullptr;
+jmethodID v8ObjectGetHandleMethodID = nullptr;
 jmethodID v8CallObjectJavaMethodMethodID = nullptr;
+
+jobject getResult(JNIEnv *env, const Local<Context>& context, jobject v8, Isolate* isolate, Handle<Value> &result, jint expectedType);
 
 void V8Runtime::OnLoad() {
     JNIEnv* env = JEnv();
 
     //  on first creation, store  a handle to JAVA classes
-    v8Cls = (jclass)env->NewGlobalRef((env)->FindClass("com/example/v8engine/V8"));
+    v8Cls = (jclass)env->NewGlobalRef(env->FindClass("com/example/v8engine/V8"));
+    v8ArrayCls = (jclass)env->NewGlobalRef(env->FindClass("com/example/v8engine/V8Array"));
+    v8ObjectCls = (jclass)env->NewGlobalRef(env->FindClass("com/example/v8engine/V8Object"));
+
 
     // Get all method IDs
-    v8CallObjectJavaMethodMethodID = env->GetMethodID(v8Cls, "callObjectJavaMethod", "(J)V");
+    v8ArrayInitMethodID = env->GetMethodID(v8ArrayCls, "<init>", "(Lcom/example/v8engine/V8;)V");
+    v8ArrayGetHandleMethodID = env->GetMethodID(v8ArrayCls, "getHandle", "()J");
+    v8ObjectInitMethodID = env->GetMethodID(v8ObjectCls, "<init>", "(Lcom/example/v8engine/V8;)V");
+    v8ObjectGetHandleMethodID = env->GetMethodID(v8ObjectCls, "getHandle", "()J");
+    v8CallObjectJavaMethodMethodID = env->GetMethodID(v8Cls, "callObjectJavaMethod", "(JLcom/example/v8engine/V8Object;Lcom/example/v8engine/V8Array;)Ljava/lang/Object;");
 }
 
-V8Runtime::V8Runtime(JNIEnv *env, jobject obj) {
+V8Runtime::V8Runtime(JNIEnv *env, jobject obj) : env_(env){
     v8 = env->NewGlobalRef(obj);
 }
 
@@ -145,6 +163,20 @@ jlong V8Runtime::initNewV8Object() {
     return reinterpret_cast<jlong>(container);
 }
 
+jobject createParameterArray(JNIEnv* env, const Local<Context>& context, Isolate* isolate, jobject v8, int size, const NAN_METHOD_ARGS_TYPE args) {
+    // V8Array result = new V8Array(v8);
+    jobject result = env->NewObject(v8ArrayCls, v8ArrayInitMethodID, v8);
+    // objectHandle = result.getHandle();
+    jlong objectHandle = env->CallLongMethod(result, v8ArrayGetHandleMethodID);
+    Handle<Object> params = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
+    for (int i = 0; i < size; ++i) {
+        Maybe<bool> unusedResult = params->Set(context, static_cast<uint32_t>(i), args[i]);
+        unusedResult.ToChecked();
+    }
+
+    return result;
+}
+
 void objectCallback(const NAN_METHOD_ARGS_TYPE args) {
     Local<External> data = Local<External>::Cast(args.Data());
     void *methodDescriptorPtr = data->Value();
@@ -152,7 +184,13 @@ void objectCallback(const NAN_METHOD_ARGS_TYPE args) {
     V8Runtime* runtime = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr);
     SETUP(runtime);
     JNIEnv* env = JEnv();
-    env->CallVoidMethod(runtime->v8, v8CallObjectJavaMethodMethodID, md->methodID);
+
+    Handle<Value> receiver = args.This();
+    jobject jreceiver = nullptr;
+    jobject params = createParameterArray(env, context, isolate, runtime->v8, args.Length(), args);
+
+    jobject resultObject = env->CallObjectMethod(runtime->v8, v8CallObjectJavaMethodMethodID, md->methodID, jreceiver, params);
+
 }
 
 jlong V8Runtime::registerJavaMethod(jlong objectHandle, jstring functionName, jboolean voidMethod) {
@@ -180,5 +218,52 @@ jlong V8Runtime::registerJavaMethod(jlong objectHandle, jstring functionName, jb
     md->obj.SetWeak();
 
     return md->methodID;
+}
+
+jstring V8Runtime::toString(jlong objectHandle) {
+    SETUP(this);
+    Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
+    String::Value unicodeString(isolate, object);
+
+    return env_->NewString(*unicodeString, unicodeString.length());
+}
+
+jobject V8Runtime::arrayGet(jint expectedType, jlong arrayHandle, jint index) {
+    SETUP(this);
+    Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
+    Handle<Value> result = array->Get(context, static_cast<uint32_t>(index)).ToLocalChecked();
+    return getResult(env_, context, v8, isolate, result, expectedType);
+}
+
+jobject getResult(JNIEnv *env, const Local<Context>& context, jobject v8, Isolate* isolate, Handle<Value> &result, jint expectedType) {
+    if (result->IsUndefined() && expectedType == V8_ARRAY) {
+
+    } else if (result->IsUndefined() && (expectedType == V8_OBJECT || expectedType == V8_NULL)) {
+
+    } else if (result->IsInt32()) {
+
+    } else if (result->IsNumber()) {
+
+    } else if (result->IsBoolean()) {
+
+    } else if (result->IsString()) {
+        String::Value unicodeString(isolate, result->ToString(context).ToLocalChecked());
+        return env->NewString(*unicodeString, unicodeString.length());
+    } else if (result->IsFunction()) {
+
+    } else if (result->IsArray()) {
+
+    } else if (result->IsTypedArray()) {
+
+    } else if (result->IsArrayBuffer()) {
+
+    } else if (result->IsObject()) {
+        jobject objectResult = env->NewObject(v8ObjectCls, v8ObjectInitMethodID, v8);
+        jlong resultHandle = env->CallLongMethod(objectResult, v8ObjectGetHandleMethodID);
+        reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(isolate, result->ToObject(context).ToLocalChecked());
+        return objectResult;
+    }
+
+    return nullptr;
 }
 
