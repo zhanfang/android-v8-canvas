@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'dart:ffi';
 
+import 'package:flutter_module/dynamic_app.dart';
+
 final DynamicLibrary nativeLib = DynamicLibrary.open("libffi.so");
 
 final int Function(int x, int y) nativeAdd = nativeLib
     .lookup<NativeFunction<Int8 Function(Int8, Int8)>>("native_add")
     .asFunction();
 
-void main() => runApp(MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  DynamicApp app = DynamicApp();
+  return runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.

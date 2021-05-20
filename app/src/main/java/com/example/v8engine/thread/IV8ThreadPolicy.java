@@ -1,7 +1,5 @@
 package com.example.v8engine.thread;
 
-import com.example.v8engine.V8Engine;
-
 /**
  * v8 线程代理策略
  */

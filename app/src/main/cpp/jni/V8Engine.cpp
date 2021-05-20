@@ -53,7 +53,7 @@ extern "C" void JNIEXPORT Java_com_example_v8engine_V8__1require(
     string src = File::ReadText(filename);
     V8Runtime* ptr = reinterpret_cast<V8Runtime*>(nativeV8Runtime);
     ptr->require(src, filename);
-    Canvas::globalCanvas->flush();
+//    Canvas::globalCanvas->flush();
 }
 
 extern "C" jstring JNIEXPORT Java_com_example_v8engine_V8__1runScript(

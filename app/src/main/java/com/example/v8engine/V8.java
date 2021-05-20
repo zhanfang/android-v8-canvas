@@ -2,6 +2,8 @@ package com.example.v8engine;
 
 import android.view.Surface;
 
+import org.json.JSONException;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -96,7 +98,11 @@ public class V8 extends V8Object {
     protected Object callObjectJavaMethod(final long methodId, final V8Object receiver, final V8Array params) {
         MethodDescriptor methodDescriptor = functionRegistry.get(methodId);
         if (methodDescriptor.callback != null) {
-            return methodDescriptor.callback.invoke(receiver, params);
+            try {
+                return methodDescriptor.callback.invoke(receiver, params);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }

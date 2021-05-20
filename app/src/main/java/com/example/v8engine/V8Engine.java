@@ -8,7 +8,7 @@ import com.example.v8engine.thread.V8ThreadPolicy;
 public class V8Engine implements IJSRuntime {
 
     private V8 v8;
-    private String TAG = "JavaV8";
+    private String TAG = "V8Engine";
     private V8ThreadPolicy v8ThreadPolicy;
 
     public static void loadLib() {
@@ -38,14 +38,6 @@ public class V8Engine implements IJSRuntime {
     public void startEngineInternal() {
         Log.d(TAG, "v8 thread start in " + Thread.currentThread().getId());
         v8 = V8.createRuntime();
-        registerJavaMethod(new JavaCallback() {
-            @Override
-            public Object invoke(V8Object receiver, V8Array parameters) {
-                Log.d(TAG, parameters.get(0).toString());
-                return null;
-            }
-
-        }, "call_to_java");
     }
 
     public void requireJSFile(final String filePath) {
@@ -59,14 +51,14 @@ public class V8Engine implements IJSRuntime {
 
     @Override
     public void runOnJSThread(Runnable runnable) {
-        if(v8ThreadPolicy != null) {
+        if (v8ThreadPolicy != null) {
             v8ThreadPolicy.runDelegateRunnable(runnable);
         }
     }
 
     @Override
     public void postOnJSThread(Runnable runnable) {
-        if(v8ThreadPolicy != null) {
+        if (v8ThreadPolicy != null) {
             v8ThreadPolicy.runDelegateRunnable(runnable);
         }
     }
@@ -113,6 +105,11 @@ public class V8Engine implements IJSRuntime {
      *
      */
     public void registerJavaMethod(final JavaCallback callback, final String jsFunctionName) {
-        v8.registerJavaMethod(callback, jsFunctionName);
+        runOnJSThread(new Runnable() {
+            @Override
+            public void run() {
+                v8.registerJavaMethod(callback, jsFunctionName);
+            }
+        });
     }
 }

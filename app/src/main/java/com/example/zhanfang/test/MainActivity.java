@@ -8,7 +8,7 @@ import android.os.Handler;
 import com.example.v8engine.V8Engine;
 import com.example.v8engine.V8EngineCache;
 import com.example.v8engine.V8Inspector;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
         v8Engine = V8EngineCache.getInstance().get("v8_engine");
 
-        v8Engine.startEngine();
+//        v8Engine.startEngine();
 
         // 测试 v8 功能
         Button button = (Button) findViewById(R.id.button);
@@ -43,26 +43,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final Application app = MainApplication.getInstance();
-        // v8 inspector 相关
-        final Handler handler = new Handler();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    V8Inspector v8Inspector = new V8Inspector(
-                            app.getFilesDir().getAbsolutePath(),
-                            app.getPackageName(),
-                            handler);
-                    v8Inspector.start();
-
-                    v8Inspector.waitForDebugger(false);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+//        final Application app = MainApplication.getInstance();
+//        // v8 inspector 相关
+//        final Handler handler = new Handler();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    V8Inspector v8Inspector = new V8Inspector(
+//                            app.getFilesDir().getAbsolutePath(),
+//                            app.getPackageName(),
+//                            handler);
+//                    v8Inspector.start();
+//
+//                    v8Inspector.waitForDebugger(false);
+//
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
     }
 
     @Override
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void callToJavaClick(View v) {
-        v8Engine.evalJavascript("call_to_java('zhanfang')", new ValueCallback<String>() {
+        v8Engine.evalJavascript("var a = {a: 1}; call_to_java(a)", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String value) {
                 Log.d(TAG, "success:" + value);

@@ -1,5 +1,7 @@
 package com.example.v8engine;
 
+import org.json.JSONException;
+
 /**
  * Classes that implement this interface provide a method
  * which can be invoked from JavaScript. The method can return
@@ -21,5 +23,5 @@ public interface JavaCallback {
      * @return A result that should be passed back to JavaScript. The
      * result must be either an Integer, Double, Boolean, String or V8Value.
      */
-    public Object invoke(V8Object receiver, V8Array parameters);
+    public Object invoke(V8Object receiver, V8Array parameters) throws JSONException;
 }
