@@ -1,21 +1,32 @@
 // flutter app
 
-var a = {
-    method: 'updateWidget',
-    params: {
-        b: 2
+var vnode = {
+  type: 'page',
+  props: {
+    appBar: {
+        type: 'appBar',
+        props: {
+            title: 'Homepage',
+            titleColor: [200, 200, 200, 1]
+        }
     }
+  },
+  children: [{
+    type: 'text',
+    props: {
+        text: 'hello zhanfang',
+        size: 20,
+        align: 'center'
+    }
+  }]
 };
 
-function pushPage() {
-
+function pushPage(params) {
+    return {
+        method: 'pushPage',
+        params
+    };
 }
 
-function Page() {
-    
-}
-
-
-var b = JSON.stringify(a);
-call_to_java(b);
-call_to_flutter(b);
+//call_to_java(b);
+call_to_flutter(JSON.stringify(pushPage(vnode)));
