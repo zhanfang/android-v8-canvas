@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
 import 'package:flutter_module/bridge/util.dart';
 
-final DynamicLibrary nativeLib = DynamicLibrary.open("libffi.so");
+final DynamicLibrary nativeLib = DynamicLibrary.open("libv8.engine.so");
 
 final int Function(int x, int y) nativeAdd = nativeLib
     .lookup<NativeFunction<Int8 Function(Int8, Int8)>>("native_add")

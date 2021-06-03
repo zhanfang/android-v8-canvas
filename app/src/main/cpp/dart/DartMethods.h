@@ -14,7 +14,7 @@ struct FFI_EXPORT NativeString {
     void free();
 };
 
-typedef NativeString* (*PlatformBrightness)(int32_t contextId);
+typedef NativeString* (*PlatformBrightness)();
 
 namespace Engine {
     struct DartMethodsPointer {
@@ -22,6 +22,7 @@ namespace Engine {
         PlatformBrightness platformBrightness;
     };
 
+    std::shared_ptr<DartMethodsPointer> getDartMethod();
     void registerDartMethods(uint64_t *methodBytes, int32_t length);
 }
 

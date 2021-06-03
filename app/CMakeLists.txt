@@ -146,7 +146,9 @@ add_library(
     src/main/cpp/jni/V8Engine.cpp
     src/main/cpp/jni/V8Inspector.cpp
     src/main/cpp/jni/AssetExtractor.cpp
-        
+    #dart
+    src/main/cpp/ffi/FlutterFFI.cpp
+    src/main/cpp/dart/DartMethods.cpp
 )
 
 #--------------------------------------------------
