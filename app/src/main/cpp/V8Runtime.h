@@ -34,7 +34,7 @@ class V8Runtime {
 public:
     static void OnLoad();
 
-    V8Runtime(JNIEnv* env, jobject obj);
+    V8Runtime(jobject obj);
     virtual ~V8Runtime();
 
     v8::Isolate* getIsolate() {return mIsolate;}
@@ -62,7 +62,6 @@ public:
     void createInspector();
 
 private:
-    JNIEnv* env_;
     v8::Persistent<v8::Object>* globalObject_;
     v8::Locker* locker_;
 };

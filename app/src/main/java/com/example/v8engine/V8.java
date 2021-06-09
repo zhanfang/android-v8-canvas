@@ -42,7 +42,7 @@ public class V8 extends V8Object {
     protected V8(final String globalAlias) {
         super(null);
         released = false;
-        v8EnginePtr = _createIsolate(v8EnginePtr, globalAlias);
+        v8EnginePtr = _createIsolate(globalAlias);
         locker = new V8Locker(this);
         checkThread();
         objectHandle = _getGlobalObject(v8EnginePtr);
@@ -148,7 +148,7 @@ public class V8 extends V8Object {
 
     // ---------------------------- native method -----------------------------------
 
-    private native long _createIsolate(final long v8RuntimePtr, String globalAlias);
+    private native long _createIsolate(String globalAlias);
 
     private native long _getGlobalObject(final long v8RuntimePtr);
 

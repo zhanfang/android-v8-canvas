@@ -8,6 +8,7 @@
 #include "inspector/InspectorClient.h"
 #include "canvas/CanvasContext2d.h"
 #include "ArgConverter.h"
+#include "JEnv.h"
 #include <nan.h>
 
 using namespace v8;
@@ -44,7 +45,7 @@ jmethodID v8ObjectInitMethodID = nullptr;
 jmethodID v8ObjectGetHandleMethodID = nullptr;
 jmethodID v8CallObjectJavaMethodMethodID = nullptr;
 
-jobject getResult(JNIEnv *env, const Local<Context>& context, jobject v8, Isolate* isolate, Handle<Value> &result, jint expectedType);
+jobject getResult(const Local<Context>& context, jobject v8, Isolate* isolate, Handle<Value> &result, jint expectedType);
 
 void V8Runtime::OnLoad() {
     JNIEnv* env = JEnv();
@@ -63,8 +64,9 @@ void V8Runtime::OnLoad() {
     v8CallObjectJavaMethodMethodID = env->GetMethodID(v8Cls, "callObjectJavaMethod", "(JLcom/example/v8engine/V8Object;Lcom/example/v8engine/V8Array;)Ljava/lang/Object;");
 }
 
-V8Runtime::V8Runtime(JNIEnv *env, jobject obj) : env_(env){
-    v8 = env->NewGlobalRef(obj);
+V8Runtime::V8Runtime(jobject obj) {
+    JEnv env;
+    v8 = env.NewGlobalRef(obj);
 }
 
 V8Runtime::~V8Runtime() {}
@@ -183,13 +185,13 @@ void objectCallback(const NAN_METHOD_ARGS_TYPE args) {
     MethodDescriptor* md = static_cast<MethodDescriptor*>(methodDescriptorPtr);
     V8Runtime* runtime = reinterpret_cast<V8Runtime*>(md->v8RuntimePtr);
     SETUP(runtime);
-    JNIEnv* env = JEnv();
+    JEnv env;
 
     Handle<Value> receiver = args.This();
     jobject jreceiver = nullptr;
     jobject params = createParameterArray(env, context, isolate, runtime->v8, args.Length(), args);
 
-    jobject resultObject = env->CallObjectMethod(runtime->v8, v8CallObjectJavaMethodMethodID, md->methodID, jreceiver, params);
+    jobject resultObject = env.CallObjectMethod(runtime->v8, v8CallObjectJavaMethodMethodID, md->methodID, jreceiver, params);
 
 }
 
@@ -225,17 +227,20 @@ jstring V8Runtime::toString(jlong objectHandle) {
     Handle<Object> object = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(objectHandle));
     String::Value unicodeString(isolate, object);
 
-    return env_->NewString(*unicodeString, unicodeString.length());
+    JEnv env;
+    return env.NewString(*unicodeString, unicodeString.length());
 }
 
 jobject V8Runtime::arrayGet(jint expectedType, jlong arrayHandle, jint index) {
     SETUP(this);
     Handle<Object> array = Local<Object>::New(isolate, *reinterpret_cast<Persistent<Object>*>(arrayHandle));
     Handle<Value> result = array->Get(context, static_cast<uint32_t>(index)).ToLocalChecked();
-    return getResult(env_, context, v8, isolate, result, expectedType);
+
+    return getResult(context, v8, isolate, result, expectedType);
 }
 
-jobject getResult(JNIEnv *env, const Local<Context>& context, jobject v8, Isolate* isolate, Handle<Value> &result, jint expectedType) {
+jobject getResult(const Local<Context>& context, jobject v8, Isolate* isolate, Handle<Value> &result, jint expectedType) {
+    JEnv env;
     if (result->IsUndefined() && expectedType == V8_ARRAY) {
 
     } else if (result->IsUndefined() && (expectedType == V8_OBJECT || expectedType == V8_NULL)) {
@@ -248,7 +253,7 @@ jobject getResult(JNIEnv *env, const Local<Context>& context, jobject v8, Isolat
 
     } else if (result->IsString()) {
         String::Value unicodeString(isolate, result->ToString(context).ToLocalChecked());
-        return env->NewString(*unicodeString, unicodeString.length());
+        return env.NewString(*unicodeString, unicodeString.length());
     } else if (result->IsFunction()) {
 
     } else if (result->IsArray()) {
@@ -258,8 +263,8 @@ jobject getResult(JNIEnv *env, const Local<Context>& context, jobject v8, Isolat
     } else if (result->IsArrayBuffer()) {
 
     } else if (result->IsObject()) {
-        jobject objectResult = env->NewObject(v8ObjectCls, v8ObjectInitMethodID, v8);
-        jlong resultHandle = env->CallLongMethod(objectResult, v8ObjectGetHandleMethodID);
+        jobject objectResult = env.NewObject(v8ObjectCls, v8ObjectInitMethodID, v8);
+        jlong resultHandle = env.CallLongMethod(objectResult, v8ObjectGetHandleMethodID);
         reinterpret_cast<Persistent<Object>*>(resultHandle)->Reset(isolate, result->ToObject(context).ToLocalChecked());
         return objectResult;
     }

@@ -130,7 +130,6 @@ class _DynamicAppRootState extends State<DynamicAppRoot> {
           children: <Widget>[
             MaterialApp(
               color: Colors.white,
-              title: '123',
               theme: ThemeData(
                 primarySwatch: Colors.blue,
               ),

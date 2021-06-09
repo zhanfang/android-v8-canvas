@@ -32,8 +32,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 
 
 extern "C" JNIEXPORT jlong JNICALL Java_com_example_v8engine_V8__1createIsolate(
-        JNIEnv *env, jobject v8 /* this */, jstring globalAlias) {
-    V8Runtime* ptr = new V8Runtime(env, v8);
+        JNIEnv *env, jobject jV8/* this */, jstring globalAlias) {
+    V8Runtime* ptr = new V8Runtime(jV8);
     ptr->createIsolate(globalAlias);
 
     jlong nativePtr = reinterpret_cast<jlong>(ptr);
