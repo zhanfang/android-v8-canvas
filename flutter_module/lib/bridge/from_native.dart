@@ -6,10 +6,6 @@ import 'package:flutter_module/bridge/util.dart';
 
 final DynamicLibrary nativeLib = DynamicLibrary.open("libv8.engine.so");
 
-final int Function(int x, int y) nativeAdd = nativeLib
-    .lookup<NativeFunction<Int8 Function(Int8, Int8)>>("native_add")
-    .asFunction();
-
 /// Steps for using dart:ffi to call a Dart function from C:
 /// 1. Import dart:ffi.
 /// 2. Create a typedef with the FFI type signature of the Dart function.

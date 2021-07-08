@@ -149,6 +149,7 @@ add_library(
     #dart
     src/main/cpp/ffi/FlutterFFI.cpp
     src/main/cpp/dart/DartMethods.cpp
+    src/main/cpp/dart/V8Engine.cpp
 )
 
 #--------------------------------------------------
@@ -189,11 +190,4 @@ target_link_libraries(
     ${GLES2_LIB}
     ${GLES1_LIB}
     ${EGL_LIB}
-)
-
-add_library(
-    ffi
-    SHARED
-    src/main/cpp/ffi/FlutterFFI.cpp
-    src/main/cpp/dart/DartMethods.cpp
 )
